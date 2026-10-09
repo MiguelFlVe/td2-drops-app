@@ -186,17 +186,16 @@ const TALENT_PIECES = ['Pechera','Mochila'];
 const W_SUBS = ['Rifle','Rifle de Asalto','Rifle de Francotirador','Ametralladora Ligera','Subfusil','Escopeta','Pistola'];
 const W_SHORT = {'Rifle':'Rifle','Rifle de Asalto':'Asalto','Rifle de Francotirador':'Franco.','Ametralladora Ligera':'AL','Subfusil':'Subfusil','Escopeta':'Escopeta','Pistola':'Pistola'};
 const COLOR = {
-  'Rojo':'red','Azul':'blue','Amarillo':'yellow',
   'Daño de arma':'red','Blindaje':'blue','Nivel de habilidad':'yellow',
   'Probabilidad de crítico':'red','Daño crítico':'red','Daño de disparo a la cabeza':'red','Manejo de armas':'red',
   'Salud':'blue','Regeneración de blindaje':'blue','Protección contra peligros':'blue','Resistencia a explosivos':'blue',
   'Daño de habilidad':'yellow','Celeridad de habilidad':'yellow','Reparación de habilidades':'yellow','Efectos de estado':'yellow'
 };
-/* Versiones anteriores guardaban el nombre del atributo core; ahora solo importa el color */
-const CORE_LEGACY = {'Daño de arma':'Rojo', 'Blindaje':'Azul', 'Nivel de habilidad':'Amarillo'};
+/* La versión 1.5 guardó el core como color; se convierte de vuelta al nombre del atributo */
+const CORE_LEGACY = {'Rojo':'Daño de arma', 'Azul':'Blindaje', 'Amarillo':'Nivel de habilidad'};
 const WT = (n, w) => ({n, w: (w || W_SUBS).slice()});
 const DEFAULT_CATALOG = {
-  gearCores: ['Rojo','Azul','Amarillo'],
+  gearCores: ['Daño de arma','Blindaje','Nivel de habilidad'],
   gearMinors: ['Probabilidad de crítico','Daño crítico','Daño de disparo a la cabeza','Manejo de armas',
     'Salud','Regeneración de blindaje','Protección contra peligros','Resistencia a explosivos',
     'Daño de habilidad','Celeridad de habilidad','Reparación de habilidades','Efectos de estado'],
@@ -693,7 +692,7 @@ function sp(v, counts, pool){
   let n = 0; for (const x of pool) n += (counts && counts[x]) || 0;
   return (((counts && counts[v]) || 0) + 1) / (n + pool.length);
 }
-/* Color del core (rojo, azul o amarillo), estimado por clase: Gear Set y Brand por separado */
+/* Atributo core estimado por clase: Gear Set y Brand por separado */
 function coreProb(c, core, st){ return sp(core, st.gCoreCls[c], C().gearCores); }
 function minorDist(st){ const pool = C().gearMinors, m = {}; for (const v of pool) m[v] = sp(v, st.gMinor, pool); return m; }
 /* Brand: dos atributos distintos, extraídos sin repetición */
@@ -943,7 +942,7 @@ function renderResults(){
       h('summary', {}, '¿Cómo se calcula?'),
       h('ul', {},
         h('li', {}, 'Cada característica se estima con tus drops como (veces que salió + 1) / (total del grupo + nº de opciones). Con pocos datos se parece al supuesto teórico; con muchos, a lo que realmente te ha caído.'),
-        h('li', {}, 'El color del core (rojo, azul o amarillo) se estima con tus drops de la misma clase: Gear Set y Brand por separado.'),
+        h('li', {}, 'El atributo core se estima con tus drops de la misma clase: Gear Set y Brand por separado.'),
         h('li', {}, 'Los atributos menores de equipo se estiman con todas tus piezas. Atributos y talentos de arma, con todas tus armas, limitados a lo que puede salir en ese subtipo. Talentos de Brand, por pieza; en Gear Set el talento viene con el set.'),
         h('li', {}, 'Las probabilidades se multiplican (cada característica sale de forma independiente). En Brand, los dos atributos menores son distintos y se extraen sin repetición.'),
         h('li', {}, 'El loot dirigido y la fuente del drop cambian las probabilidades reales: para comparar, conviene registrar drops de una misma actividad.')))));
@@ -1122,7 +1121,7 @@ function renderCatalog(){
     'Listas precargadas con los atributos y talentos del juego. Edítalas si una temporada agrega o cambia algo: una opción por línea. Cambiar un nombre no modifica los drops ya registrados.'));
 
   root.append(card('Equipo · atributos',
-    field('Core (color)', listArea(() => CW.gearCores, v => { CW.gearCores = v; }, 3)),
+    field('Core', listArea(() => CW.gearCores, v => { CW.gearCores = v; }, 3)),
     field('Atributos menores', listArea(() => CW.gearMinors, v => { CW.gearMinors = v; }, 8))));
 
   root.append(card('Equipo · talentos Brand',
