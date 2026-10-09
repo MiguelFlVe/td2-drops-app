@@ -186,27 +186,17 @@ const TALENT_PIECES = ['Pechera','Mochila'];
 const W_SUBS = ['Rifle','Rifle de Asalto','Rifle de Francotirador','Ametralladora Ligera','Subfusil','Escopeta','Pistola'];
 const W_SHORT = {'Rifle':'Rifle','Rifle de Asalto':'Asalto','Rifle de Francotirador':'Franco.','Ametralladora Ligera':'AL','Subfusil':'Subfusil','Escopeta':'Escopeta','Pistola':'Pistola'};
 const COLOR = {
+  'Rojo':'red','Azul':'blue','Amarillo':'yellow',
   'Daño de arma':'red','Blindaje':'blue','Nivel de habilidad':'yellow',
   'Probabilidad de crítico':'red','Daño crítico':'red','Daño de disparo a la cabeza':'red','Manejo de armas':'red',
   'Salud':'blue','Regeneración de blindaje':'blue','Protección contra peligros':'blue','Resistencia a explosivos':'blue',
   'Daño de habilidad':'yellow','Celeridad de habilidad':'yellow','Reparación de habilidades':'yellow','Efectos de estado':'yellow'
 };
-const RED = 'Daño de arma', BLUE = 'Blindaje', YEL = 'Nivel de habilidad';
-const BRAND_SETS = ['5.11 Tactical','Airaldi','Alps Summit','Badger Tuff','Belstone Armory','Brazos de Arcabuz','Ceska Vyroba',
-  'China Light','Douglas & Harding','Edelweiss GPz','Electrique','Empress International','Fenris Group','Gila Guard','Golan Gear',
-  'Grupo Sombra','Habsburg Guard','Hana-U','Imminence Armaments','Legatus','Lengmo','Murakami Industries','Overlord Armaments',
-  'Palisade Steelworks','Petrov Defense Group','Providence Defense','Richter & Kaiser','Royal Works','Shiny Monkey Gear','Sokolov',
-  'Unit Alloys','Urban Lookout','Uzina Getica','Walker, Harris & Co','Wyvern Wear','Yaahl Gear','Zwiadowka'].map(n => ({n}));
-/* Gear Sets: core natural precargado solo donde es seguro; el resto se aprende de tus drops o se fija en Catálogo */
-const GEAR_SETS = [['Aces & Eights', RED], ['Aegis'], ['Breaking Point'], ['Cavalier'], ['Concentrated Company'], ['Core Strength'],
-  ['Eclipse Protocol', YEL], ['Ember Engine'], ['Foundry Bulwark', BLUE], ['Future Initiative', YEL], ['Hard Wired', YEL],
-  ['Heartbreaker', RED], ['Hotshot', RED], ["Hunter's Fury", RED], ['Measured Assembly'], ["Negotiator's Dilemma", RED],
-  ['Ongoing Directive'], ['Ortiz: Exuro'], ['Ortiz: Reficere'], ['Refactor'], ['Rigger', YEL], ["Striker's Battlegear", RED],
-  ['System Corruption'], ['Tip of the Spear', RED], ['Tipping Scales'], ['True Patriot'], ['Umbra Initiative'], ['Virtuoso']
-].map(([n, core]) => core ? {n, core} : {n});
+/* Versiones anteriores guardaban el nombre del atributo core; ahora solo importa el color */
+const CORE_LEGACY = {'Daño de arma':'Rojo', 'Blindaje':'Azul', 'Nivel de habilidad':'Amarillo'};
 const WT = (n, w) => ({n, w: (w || W_SUBS).slice()});
 const DEFAULT_CATALOG = {
-  gearCores: ['Daño de arma','Blindaje','Nivel de habilidad'],
+  gearCores: ['Rojo','Azul','Amarillo'],
   gearMinors: ['Probabilidad de crítico','Daño crítico','Daño de disparo a la cabeza','Manejo de armas',
     'Salud','Regeneración de blindaje','Protección contra peligros','Resistencia a explosivos',
     'Daño de habilidad','Celeridad de habilidad','Reparación de habilidades','Efectos de estado'],
@@ -218,8 +208,6 @@ const DEFAULT_CATALOG = {
       'Energize','Galvanize','Leadership','Opportunistic','Overclock','Protector','Safeguard','Shock and Awe','Tech Support',
       'Unstoppable Force','Versatile','Vigilance','Wicked']
   },
-  brandSets: BRAND_SETS,
-  gearSets: GEAR_SETS,
   weapons: {
     'Rifle': {core1:'Daño de rifle', core2:['Daño crítico']},
     'Rifle de Asalto': {core1:'Daño de rifle de asalto', core2:['Daño a la salud']},
@@ -287,21 +275,10 @@ const oneIn = p => p > 0 ? '≈ 1 de cada ' + fmtInt(1 / p) + ' drops' : '—';
 function needed(p, q){ if (p <= 0) return Infinity; if (p >= 1) return 1; return Math.ceil(Math.log(1 - q) / Math.log(1 - p)); }
 function parseLines(t){ const seen = new Set(); return t.split(/\r?\n/).map(s => s.trim()).filter(s => s && !seen.has(s) && seen.add(s)); }
 function cleanList(a){ return Array.isArray(a) ? a.filter(x => typeof x === 'string' && x.trim()).map(x => x.trim()) : null; }
-function normSets(a, def){
-  if (!Array.isArray(a)) return clone(def);
-  const seen = new Set(), out = [];
-  for (const x of a){
-    const n = typeof x === 'string' ? x.trim() : (x && typeof x.n === 'string' ? x.n.trim() : '');
-    if (!n || seen.has(n)) continue;
-    seen.add(n);
-    const core = x && typeof x.core === 'string' && x.core.trim() ? x.core.trim() : null;
-    out.push(core ? {n, core} : {n});
-  }
-  return out;
-}
 /* Versión anterior: el Gear Set se guardaba como talento de la pechera/mochila */
 function migrateDrop(d){
   if (d && d.cat === 'Equipo' && d.clase === 'Gear' && d.talent && !d.set){ d.set = d.talent; d.talent = null; }
+  if (d && d.cat === 'Equipo' && CORE_LEGACY[d.core]) d.core = CORE_LEGACY[d.core];
   return d;
 }
 
@@ -314,11 +291,9 @@ function normalizeCatalog(c){
   const d = clone(DEFAULT_CATALOG);
   if (!c || typeof c !== 'object') return d;
   const out = {
-    gearCores: cleanList(c.gearCores) || d.gearCores,
+    gearCores: [...new Set((cleanList(c.gearCores) || d.gearCores).map(x => CORE_LEGACY[x] || x))],
     gearMinors: cleanList(c.gearMinors) || d.gearMinors,
     weaponMinors: cleanList(c.weaponMinors) || d.weaponMinors,
-    brandSets: normSets(c.brandSets, d.brandSets),
-    gearSets: normSets(c.gearSets, d.gearSets),
     gearTalents: {}, weapons: {}, weaponTalents: d.weaponTalents
   };
   for (const k of Object.keys(d.gearTalents)) out.gearTalents[k] = cleanList(c.gearTalents && c.gearTalents[k]) || d.gearTalents[k];
@@ -360,7 +335,7 @@ function nJSON(fn, ...a){ const r = nCall(fn, ...a); try{ return r ? JSON.parse(
 function nativeStatus(){ db = nJSON('status') || {hasFile:false, name:''}; }
 function loadCacheInto(){ const d = parseDb(nCall('loadCache') || ''); if (d) applyData(d); }
 function resetSelections(){
-  Object.assign(R, {set:null, core:null, minors:[], talent:null});
+  Object.assign(R, {core:null, minors:[], talent:null});
   Object.assign(Q, blankSel(Q.cat));
   catDirty = false; CW = null;
 }
@@ -487,13 +462,6 @@ function updateChrome(){
 /* ---------- Pools del catálogo ---------- */
 const C = () => S.catalog;
 function gearTalentPool(c, s){ if (c !== 'Brand' || !TALENT_PIECES.includes(s)) return []; return (C().gearTalents['Brand|' + s] || []).slice().sort(coll); }
-const setList = c => (c === 'Gear' ? C().gearSets : C().brandSets) || [];
-function setPool(c){ return setList(c).map(x => x.n).sort(coll); }
-function natCore(c, set){
-  if (!c || !set) return null;
-  const x = setList(c).find(y => y.n === set);
-  return x && x.core && C().gearCores.includes(x.core) ? x.core : null;
-}
 function wCfg(s){ return C().weapons[s] || {core1:'', core2:[]}; }
 function wMinorPool(s, core2){
   const cfg = wCfg(s);
@@ -573,15 +541,13 @@ document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('cl
 /* =========================================================
    1) REGISTRO
    ========================================================= */
-const R = {cat:'Equipo', clase:null, set:null, sub:null, core:null, core2:null, minors:[], talent:null, note:''};
-function applyNat(){ const n = natCore(R.clase, R.set); if (n) R.core = n; }
+const R = {cat:'Equipo', clase:null, sub:null, core:null, core2:null, minors:[], talent:null, note:''};
 
 function regLimit(){ return R.clase === 'Gear' ? 1 : 2; }
 function regMissing(){
   const m = [];
   if (R.cat === 'Equipo'){
     if (!R.clase) m.push('clase');
-    else if (!R.set) m.push('set');
     if (!R.sub) m.push('pieza');
     if (!R.core) m.push('core');
     const lim = regLimit();
@@ -604,31 +570,23 @@ function renderReg(){
   root.append(form);
 
   form.append(field('Tipo', seg(TYPES.map(t => ({v:t, label:t})), R.cat, v => {
-    if (R.cat !== v) Object.assign(R, {cat:v, clase:null, set:null, sub:null, core:null, core2:null, minors:[], talent:null});
+    if (R.cat !== v) Object.assign(R, {cat:v, clase:null, sub:null, core:null, core2:null, minors:[], talent:null});
     renderReg();
   })));
 
   if (R.cat === 'Equipo'){
     form.append(field('Clase', seg(CLASSES.map(c => ({v:c, label:CLASS_LABEL[c]})), R.clase, v => {
-      if (R.clase !== v){ R.clase = v; R.set = null; }
+      R.clase = v;
       while (R.minors.length > regLimit()) R.minors.shift();
       if (R.talent && !gearTalentPool(v, R.sub).includes(R.talent)) R.talent = null;
       renderReg();
     })));
-    if (R.clase){
-      form.append(field('Set', selectBox(setPool(R.clase), R.set, v => { R.set = v || null; applyNat(); renderReg(); },
-        R.clase === 'Gear' ? '— Elige el Gear Set —' : '— Elige el Brand Set —')));
-    }
     form.append(field('Pieza', chips(GEAR_PIECES.map(p => opt(p)), R.sub, v => {
       R.sub = v;
       if (R.talent && !gearTalentPool(R.clase, v).includes(R.talent)) R.talent = null;
       renderReg();
     }, 3)));
-    const nat = natCore(R.clase, R.set);
-    form.append(field('Atributo core', chips(C().gearCores.map(x => opt(x)), R.core, v => { R.core = v; renderReg(); }), nat ? 'Natural del set' : null));
-    if (nat && R.core && R.core !== nat){
-      form.append(h('div', {class:'note warn'}, 'El catálogo indica que ' + R.set + ' siempre trae core ' + nat + '. Si te salió otro, corrige el set en Catálogo para que el cálculo sea correcto.'));
-    }
+    form.append(field('Atributo core', chips(C().gearCores.map(x => opt(x)), R.core, v => { R.core = v; renderReg(); }, 3)));
     const lim = regLimit();
     form.append(field(lim === 2 ? 'Atributos menores' : 'Atributo menor',
       chips(C().gearMinors.map(x => opt(x)), R.minors, v => { toggleMulti(R.minors, v, lim); renderReg(); }, 2),
@@ -686,7 +644,7 @@ function saveDrop(){
   if (regMissing().length) return;
   const d = {id: uid(), ts: Date.now(), cat: R.cat, sub: R.sub, minors: R.minors.slice()};
   if (R.cat === 'Equipo'){
-    d.clase = R.clase; d.set = R.set; d.core = R.core;
+    d.clase = R.clase; d.core = R.core;
     d.talent = R.clase === 'Brand' && TALENT_PIECES.includes(R.sub) ? (R.talent || null) : null;
   } else {
     d.core1 = wCfg(R.sub).core1; d.core2 = R.core2 || null; d.talent = R.talent || null;
@@ -695,7 +653,6 @@ function saveDrop(){
   S.drops.push(d);
   persist();
   R.core = null; R.minors = []; R.talent = null; R.note = '';
-  applyNat();
   renderReg();
   toast('Drop guardado', 'Deshacer', () => {
     S.drops = S.drops.filter(x => x.id !== d.id);
@@ -706,22 +663,18 @@ function saveDrop(){
 /* =========================================================
    2) PROBABILIDAD
    ========================================================= */
-const Q = {cat:'Equipo', clase:ANY, set:ANY, sub:ANY, core:ANY, core2:ANY, minors:[], talent:ANY};
+const Q = {cat:'Equipo', clase:ANY, sub:ANY, core:ANY, core2:ANY, minors:[], talent:ANY};
 let nextM = 100;
-const blankSel = cat => ({cat, clase:ANY, set:ANY, sub:ANY, core:ANY, core2:ANY, minors:[], talent:ANY});
+const blankSel = cat => ({cat, clase:ANY, sub:ANY, core:ANY, core2:ANY, minors:[], talent:ANY});
 
 function inc(o, k){ if (k == null) return; o[k] = (o[k] || 0) + 1; }
 function buildStats(drops){
-  const st = {n:0, type:{}, gClase:{}, gSet:{}, gCoreSet:{}, gCoreCls:{}, gPiece:{}, gMinor:{}, gTal:{}, wSub:{}, wCore2:{}, wMinor:{}, wTal:{}};
+  const st = {n:0, type:{}, gClase:{}, gCoreCls:{}, gPiece:{}, gMinor:{}, gTal:{}, wSub:{}, wCore2:{}, wMinor:{}, wTal:{}};
   for (const d of drops){
     st.n++; inc(st.type, d.cat);
     if (d.cat === 'Equipo'){
       inc(st.gClase, d.clase); inc(st.gPiece, d.sub);
-      if (d.set){
-        st.gSet[d.clase] = st.gSet[d.clase] || {}; inc(st.gSet[d.clase], d.set);
-        const ks = d.clase + '|' + d.set; st.gCoreSet[ks] = st.gCoreSet[ks] || {}; inc(st.gCoreSet[ks], d.core);
-      }
-      if (!natCore(d.clase, d.set)){ st.gCoreCls[d.clase] = st.gCoreCls[d.clase] || {}; inc(st.gCoreCls[d.clase], d.core); }
+      st.gCoreCls[d.clase] = st.gCoreCls[d.clase] || {}; inc(st.gCoreCls[d.clase], d.core);
       (d.minors || []).forEach(m => inc(st.gMinor, m));
       if (d.talent){ const k = d.clase + '|' + d.sub; st.gTal[k] = st.gTal[k] || {}; inc(st.gTal[k], d.talent); }
     } else if (d.cat === 'Arma'){
@@ -740,18 +693,8 @@ function sp(v, counts, pool){
   let n = 0; for (const x of pool) n += (counts && counts[x]) || 0;
   return (((counts && counts[v]) || 0) + 1) / (n + pool.length);
 }
-/* Core por set: fijo si el set tiene core natural; si no, tus drops de ese set completados con los de toda la clase */
-function coreProb(c, set, core, st){
-  const pool = C().gearCores;
-  if (!pool.includes(core)) return 0;
-  const nat = natCore(c, set);
-  if (nat) return core === nat ? 1 : 0;
-  const prior = sp(core, st.gCoreCls[c], pool);
-  if (!set) return prior;
-  const cs = st.gCoreSet[c + '|' + set] || {};
-  let n = 0; for (const x of pool) n += cs[x] || 0;
-  return ((cs[core] || 0) + pool.length * prior) / (n + pool.length);
-}
+/* Color del core (rojo, azul o amarillo), estimado por clase: Gear Set y Brand por separado */
+function coreProb(c, core, st){ return sp(core, st.gCoreCls[c], C().gearCores); }
 function minorDist(st){ const pool = C().gearMinors, m = {}; for (const v of pool) m[v] = sp(v, st.gMinor, pool); return m; }
 /* Brand: dos atributos distintos, extraídos sin repetición */
 function minorsProb(c, minors, dist){
@@ -787,13 +730,8 @@ function prob(sel, st){
         pp += ps * pt;
       }
       if (!pp) continue;
-      const pool = setPool(c);
-      let psc = 0;
-      if (sel.set !== ANY) psc = sp(sel.set, st.gSet[c], pool) * (sel.core === ANY ? 1 : coreProb(c, sel.set, sel.core, st));
-      else if (sel.core === ANY) psc = 1;
-      else if (pool.length) for (const x of pool) psc += sp(x, st.gSet[c], pool) * coreProb(c, x, sel.core, st);
-      else psc = coreProb(c, null, sel.core, st);
-      t += pc * psc * pp * pm;
+      const pcore = sel.core === ANY ? 1 : coreProb(c, sel.core, st);
+      t += pc * pcore * pp * pm;
     }
     return pType * t;
   }
@@ -819,7 +757,6 @@ function prob(sel, st){
 function matches(d, sel){
   if (d.cat !== sel.cat) return false;
   if (sel.clase !== ANY && d.clase !== sel.clase) return false;
-  if (sel.set !== ANY && d.set !== sel.set) return false;
   if (sel.sub !== ANY && d.sub !== sel.sub) return false;
   if (sel.core !== ANY && d.core !== sel.core) return false;
   if (sel.core2 !== ANY && d.core2 !== sel.core2) return false;
@@ -828,7 +765,7 @@ function matches(d, sel){
   return true;
 }
 function levels(sel){
-  const keys = sel.cat === 'Equipo' ? ['clase','set','sub','core','minors','talent'] : ['sub','core2','minors','talent'];
+  const keys = sel.cat === 'Equipo' ? ['clase','sub','core','minors','talent'] : ['sub','core2','minors','talent'];
   let cur = blankSel(sel.cat);
   const out = [{key:'cat', sel:cur}];
   for (const k of keys){
@@ -843,7 +780,6 @@ function levelLabel(k, sel){
   switch (k){
     case 'cat': return ['Tipo', sel.cat];
     case 'clase': return ['Clase', CLASS_LABEL[sel.clase]];
-    case 'set': return ['Set', sel.set];
     case 'sub': return [sel.cat === 'Equipo' ? 'Pieza' : 'Subtipo', sel.sub];
     case 'core': return ['Core', sel.core];
     case 'core2': return ['Core 2', sel.core2];
@@ -866,24 +802,17 @@ function renderProbForm(){
 
   if (Q.cat === 'Equipo'){
     f.append(field('Clase', chips([anyOpt].concat(CLASSES.map(c => ({v:c, label:CLASS_LABEL[c]}))), Q.clase, v => {
-      if (Q.clase !== v){ Q.clase = v; Q.set = ANY; }
+      Q.clase = v;
       while (Q.minors.length > qLimit()) Q.minors.shift();
       if (Q.talent !== ANY && !talentPoolQ().includes(Q.talent)) Q.talent = ANY;
       rerender();
     }, 3)));
-    if (Q.clase !== ANY){
-      f.append(field('Set', selectBox(setPool(Q.clase), Q.set === ANY ? '' : Q.set, v => { Q.set = v || ANY; rerender(); }, 'Cualquiera')));
-    } else {
-      f.append(h('div', {class:'note'}, 'Elige Gear Set o Brand para filtrar por set.'));
-    }
     f.append(field('Pieza', chips([anyOpt].concat(GEAR_PIECES.map(p => opt(p))), Q.sub, v => {
       Q.sub = v;
       if (Q.talent !== ANY && !talentPoolQ().includes(Q.talent)) Q.talent = ANY;
       rerender();
     }, 3)));
-    const qnat = Q.set !== ANY ? natCore(Q.clase, Q.set) : null;
-    f.append(field('Atributo core', chips([anyOpt].concat(C().gearCores.map(x => opt(x))), Q.core, v => { Q.core = v; rerender(); }, 2),
-      qnat ? 'Natural del set: ' + qnat : null));
+    f.append(field('Atributo core', chips([anyOpt].concat(C().gearCores.map(x => opt(x))), Q.core, v => { Q.core = v; rerender(); }, 2)));
     const lim = qLimit();
     f.append(field(lim === 2 ? 'Atributos menores' : 'Atributo menor',
       chips([anyOpt].concat(C().gearMinors.map(x => opt(x))), Q.minors, v => {
@@ -892,7 +821,7 @@ function renderProbForm(){
       }, 2),
       'hasta ' + lim));
     if (TALENT_PIECES.includes(Q.sub)){
-      if (Q.clase === 'Gear') f.append(field('Talento', h('div', {class:'note'}, 'Las piezas de Gear Set traen el talento propio del set: basta con elegir el set.')));
+      if (Q.clase === 'Gear') f.append(field('Talento', h('div', {class:'note'}, 'Las piezas de Gear Set traen el talento propio del set, así que no se filtra por talento.')));
       else f.append(field('Talento', selectBox(talentPoolQ(), Q.talent, v => { Q.talent = v || ANY; renderResults(); }, 'Cualquiera'),
         Q.clase === ANY ? 'solo Brand' : null));
     } else {
@@ -935,7 +864,6 @@ function minorPoolQ(){
 function describeBase(){
   if (Q.cat === 'Equipo'){
     const p = Q.sub === ANY ? 'pieza de equipo' : Q.sub;
-    if (Q.set !== ANY) return p + ' de ' + Q.set;
     return p + (Q.clase === ANY ? '' : ' ' + CLASS_LABEL[Q.clase]);
   }
   return Q.sub === ANY ? 'arma' : Q.sub;
@@ -956,10 +884,7 @@ function renderResults(){
   }
   const p = pd0, pT = pt0, k = c0;
   if (!(p > 0)){
-    const nat = Q.cat === 'Equipo' && Q.set !== ANY ? natCore(Q.clase, Q.set) : null;
-    const why = nat && Q.core !== ANY && Q.core !== nat
-      ? 'Según el Catálogo, ' + Q.set + ' siempre trae core ' + nat + '. Si en el juego no es así, corrígelo en Catálogo.'
-      : 'Esa combinación no puede salir con el catálogo actual.';
+    const why = 'Esa combinación no puede salir con el catálogo actual.';
     box.append(card('Resultado', h('p', {class:'muted'}, why)));
     return;
   }
@@ -1013,12 +938,12 @@ function renderResults(){
     h('table', {class:'bd'},
       h('thead', {}, h('tr', {}, h('th', {}, 'Paso'), h('th', {class:'num'}, 'Tus datos'), h('th', {class:'num'}, 'Teórico'))),
       tb),
-    h('p', {class:'small muted', style:'margin:10px 0 0'}, 'Cada fila es la probabilidad de ese paso dado lo anterior. Debajo del porcentaje: veces observadas / drops del paso anterior. El teórico supone que todas las opciones del catálogo son igual de probables (salvo el core natural de un set); en tipo, clase, set y pieza depende de la actividad.'),
+    h('p', {class:'small muted', style:'margin:10px 0 0'}, 'Cada fila es la probabilidad de ese paso dado lo anterior. Debajo del porcentaje: veces observadas / drops del paso anterior. El teórico supone que todas las opciones del catálogo son igual de probables; en tipo, clase y pieza depende de la actividad.'),
     h('details', {},
       h('summary', {}, '¿Cómo se calcula?'),
       h('ul', {},
         h('li', {}, 'Cada característica se estima con tus drops como (veces que salió + 1) / (total del grupo + nº de opciones). Con pocos datos se parece al supuesto teórico; con muchos, a lo que realmente te ha caído.'),
-        h('li', {}, 'El core se estima por set: si el set tiene core natural en el Catálogo, solo sale ese; si no, se usan tus drops de ese set, completados con los de toda la clase mientras haya pocos.'),
+        h('li', {}, 'El color del core (rojo, azul o amarillo) se estima con tus drops de la misma clase: Gear Set y Brand por separado.'),
         h('li', {}, 'Los atributos menores de equipo se estiman con todas tus piezas. Atributos y talentos de arma, con todas tus armas, limitados a lo que puede salir en ese subtipo. Talentos de Brand, por pieza; en Gear Set el talento viene con el set.'),
         h('li', {}, 'Las probabilidades se multiplican (cada característica sale de forma independiente). En Brand, los dos atributos menores son distintos y se extraen sin repetición.'),
         h('li', {}, 'El loot dirigido y la fuente del drop cambian las probabilidades reales: para comparar, conviene registrar drops de una misma actividad.')))));
@@ -1085,9 +1010,8 @@ function renderHist(){
   if (list.length > histLimit) root.append(h('button', {type:'button', class:'btn block', onclick: () => { histLimit += 100; renderHist(); }}, 'Mostrar más (' + fmtInt(list.length - histLimit) + ')'));
 }
 function dropItem(d){
-  const title = d.cat === 'Equipo' ? d.sub + ' · ' + (d.set || 'set sin indicar') : d.sub;
-  const time = (d.cat === 'Equipo' ? (CLASS_LABEL[d.clase] || d.clase) : 'Arma') + ' · ' +
-    new Date(d.ts).toLocaleString('es-CO', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+  const title = d.cat === 'Equipo' ? d.sub + ' · ' + (CLASS_LABEL[d.clase] || d.clase) : d.sub;
+  const time = new Date(d.ts).toLocaleString('es-CO', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
   const tags = h('div', {class:'tags'});
   const t = (txt, c, cls) => h('span', {class:'tag' + (cls ? ' ' + cls : '')}, dot(c), txt);
   if (d.cat === 'Equipo') tags.append(t(d.core, COLOR[d.core]));
@@ -1120,10 +1044,10 @@ function exportJSON(){
 }
 function exportCSV(){
   const esc = v => { const s = v == null ? '' : String(v); return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
-  const head = ['fecha','tipo','clase','set','subtipo','core','core_arma','core_2','menor_1','menor_2','talento','nota'];
+  const head = ['fecha','tipo','clase','subtipo','core','core_arma','core_2','menor_1','menor_2','talento','nota'];
   const lines = [head.join(',')];
   for (const d of S.drops.slice().sort((a, b) => a.ts - b.ts)){
-    lines.push([new Date(d.ts).toISOString(), d.cat, d.clase ? CLASS_LABEL[d.clase] : '', d.set || '', d.sub, d.core || '', d.core1 || '', d.core2 || '',
+    lines.push([new Date(d.ts).toISOString(), d.cat, d.clase ? CLASS_LABEL[d.clase] : '', d.sub, d.core || '', d.core1 || '', d.core2 || '',
       (d.minors || [])[0] || '', (d.minors || [])[1] || '', d.talent || '', d.note || ''].map(esc).join(','));
   }
   const csv = '\ufeff' + lines.join('\n');
@@ -1190,32 +1114,6 @@ function listArea(get, set, rows){
   ta.addEventListener('input', () => { set(parseLines(ta.value)); markDirty(); });
   return ta;
 }
-function resolveCore(raw){
-  const t = (raw || '').trim(); if (!t) return null;
-  const cores = (CW && CW.gearCores) || C().gearCores, low = t.toLowerCase();
-  const hit = cores.find(c => c.toLowerCase() === low); if (hit) return hit;
-  const color = {rojo:'red', red:'red', azul:'blue', blue:'blue', amarillo:'yellow', yellow:'yellow'}[low];
-  if (color) return cores.find(c => COLOR[c] === color) || cores[{red:0, blue:1, yellow:2}[color]] || null;
-  return t;
-}
-function parseSetLines(text){
-  const seen = new Set(), out = [];
-  for (const line of text.split(/\r?\n/)){
-    const i = line.indexOf('|');
-    const n = (i >= 0 ? line.slice(0, i) : line).trim();
-    if (!n || seen.has(n)) continue;
-    seen.add(n);
-    const core = i >= 0 ? resolveCore(line.slice(i + 1)) : null;
-    out.push(core ? {n, core} : {n});
-  }
-  return out;
-}
-function setArea(get, set, rows){
-  const ta = h('textarea', {rows: String(rows || 8), spellcheck:'false'});
-  ta.value = get().map(x => x.n + (x.core ? ' | ' + x.core : '')).join('\n');
-  ta.addEventListener('input', () => { set(parseSetLines(ta.value)); markDirty(); });
-  return ta;
-}
 function renderCatalog(){
   if (!catDirty || !CW) CW = clone(S.catalog);
   const root = $('#catalog');
@@ -1224,13 +1122,8 @@ function renderCatalog(){
     'Listas precargadas con los atributos y talentos del juego. Edítalas si una temporada agrega o cambia algo: una opción por línea. Cambiar un nombre no modifica los drops ya registrados.'));
 
   root.append(card('Equipo · atributos',
-    field('Core', listArea(() => CW.gearCores, v => { CW.gearCores = v; }, 3)),
+    field('Core (color)', listArea(() => CW.gearCores, v => { CW.gearCores = v; }, 3)),
     field('Atributos menores', listArea(() => CW.gearMinors, v => { CW.gearMinors = v; }, 8))));
-
-  root.append(card('Equipo · sets',
-    h('p', {class:'small muted', style:'margin:0'}, 'Un set por línea. Si un set siempre trae el mismo core, escríbelo después de una barra, por ejemplo: Hard Wired | Nivel de habilidad (también sirve rojo, azul o amarillo). Sin core fijo, la app lo estima con tus drops de ese set.'),
-    field('Brand Sets', setArea(() => CW.brandSets, v => { CW.brandSets = v; }, 8)),
-    field('Gear Sets', setArea(() => CW.gearSets, v => { CW.gearSets = v; }, 8))));
 
   root.append(card('Equipo · talentos Brand',
     h('p', {class:'small muted', style:'margin:0'}, 'Las piezas de Gear Set traen el talento propio del set, así que no se listan aquí.'),
@@ -1296,7 +1189,7 @@ function saveCatalog(){
   catDirty = false; CW = null;
   persist();
   // Limpia selecciones que ya no existan
-  Object.assign(R, {set:null, core:null, minors:[], talent:null});
+  Object.assign(R, {core:null, minors:[], talent:null});
   Object.assign(Q, blankSel(Q.cat));
   renderCatalog();
   toast('Catálogo guardado');
