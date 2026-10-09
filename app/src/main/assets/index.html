@@ -125,6 +125,16 @@ details ul{padding-left:18px;margin:6px 0}
 .panel textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
 .warn{color:var(--yellow)}
 .empty{text-align:center;color:var(--muted);padding:28px 10px}
+.corehead,.corerow{display:grid;grid-template-columns:1.5fr 1fr .9fr;gap:8px;align-items:center}
+.corehead{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;padding:0 12px 6px}
+.corehead span:not(:first-child){text-align:right}
+.corelist{display:grid;gap:8px}
+.corerow{width:100%;text-align:left;min-height:54px;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface2)}
+.corerow[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.corerow .cr-name{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;line-height:1.2}
+.corerow .cr-p,.corerow .cr-k{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.corerow small{display:block;font-weight:500;color:var(--muted);font-size:11px}
+.corerow .dot{width:9px;height:9px;border-radius:50%;flex:none}
 .onboard{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px 16px;overflow:auto}
 .onboard .box{max-width:420px;width:100%}
 .onboard .logo{width:56px;height:56px;border-radius:14px;font-size:18px;margin-bottom:18px}
@@ -667,15 +677,19 @@ let nextM = 100;
 const blankSel = cat => ({cat, clase:ANY, sub:ANY, core:ANY, core2:ANY, minors:[], talent:ANY});
 
 function inc(o, k){ if (k == null) return; o[k] = (o[k] || 0) + 1; }
+/* En equipo, cada atributo core es un grupo aparte: clase, pieza, menores y talento se cuentan por core */
+const newGroup = () => ({n:0, gClase:{}, gPiece:{}, gMinor:{}, gTal:{}});
+const EMPTY_GROUP = newGroup();
 function buildStats(drops){
-  const st = {n:0, type:{}, gClase:{}, gCoreCls:{}, gPiece:{}, gMinor:{}, gTal:{}, wSub:{}, wCore2:{}, wMinor:{}, wTal:{}};
+  const st = {n:0, type:{}, gCore:{}, gByCore:{}, wSub:{}, wCore2:{}, wMinor:{}, wTal:{}};
   for (const d of drops){
     st.n++; inc(st.type, d.cat);
     if (d.cat === 'Equipo'){
-      inc(st.gClase, d.clase); inc(st.gPiece, d.sub);
-      st.gCoreCls[d.clase] = st.gCoreCls[d.clase] || {}; inc(st.gCoreCls[d.clase], d.core);
-      (d.minors || []).forEach(m => inc(st.gMinor, m));
-      if (d.talent){ const k = d.clase + '|' + d.sub; st.gTal[k] = st.gTal[k] || {}; inc(st.gTal[k], d.talent); }
+      inc(st.gCore, d.core);
+      const g = st.gByCore[d.core] = st.gByCore[d.core] || newGroup();
+      g.n++; inc(g.gClase, d.clase); inc(g.gPiece, d.sub);
+      (d.minors || []).forEach(m => inc(g.gMinor, m));
+      if (d.talent){ const k = d.clase + '|' + d.sub; g.gTal[k] = g.gTal[k] || {}; inc(g.gTal[k], d.talent); }
     } else if (d.cat === 'Arma'){
       inc(st.wSub, d.sub);
       st.wCore2[d.sub] = st.wCore2[d.sub] || {}; inc(st.wCore2[d.sub], d.core2);
@@ -692,9 +706,7 @@ function sp(v, counts, pool){
   let n = 0; for (const x of pool) n += (counts && counts[x]) || 0;
   return (((counts && counts[v]) || 0) + 1) / (n + pool.length);
 }
-/* Atributo core estimado por clase: Gear Set y Brand por separado */
-function coreProb(c, core, st){ return sp(core, st.gCoreCls[c], C().gearCores); }
-function minorDist(st){ const pool = C().gearMinors, m = {}; for (const v of pool) m[v] = sp(v, st.gMinor, pool); return m; }
+function minorDist(g){ const pool = C().gearMinors, m = {}; for (const v of pool) m[v] = sp(v, g.gMinor, pool); return m; }
 /* Brand: dos atributos distintos, extraídos sin repetición */
 function minorsProb(c, minors, dist){
   if (!minors.length) return 1;
@@ -713,24 +725,29 @@ function minorsProb(c, minors, dist){
 function prob(sel, st){
   if (sel.cat === 'Equipo'){
     const pType = sp('Equipo', st.type, TYPES);
-    const dist = minorDist(st);
+    const corePool = C().gearCores;
+    const cores = sel.core === ANY ? corePool : [sel.core];
     const classes = sel.clase === ANY ? CLASSES : [sel.clase];
     const pieces = sel.sub === ANY ? GEAR_PIECES : [sel.sub];
     let t = 0;
-    for (const c of classes){
-      const pc = sp(c, st.gClase, CLASSES);
-      const pm = minorsProb(c, sel.minors, dist);
-      if (!pm) continue;
-      let pp = 0;
-      for (const s of pieces){
-        const ps = sp(s, st.gPiece, GEAR_PIECES);
-        let pt = 1;
-        if (sel.talent !== ANY) pt = c === 'Brand' ? sp(sel.talent, st.gTal['Brand|' + s], gearTalentPool('Brand', s)) : 0;
-        pp += ps * pt;
+    for (const core of cores){
+      const pk = sp(core, st.gCore, corePool);
+      if (!pk) continue;
+      const g = st.gByCore[core] || EMPTY_GROUP;   // solo los drops con este core
+      const dist = minorDist(g);
+      for (const c of classes){
+        const pc = sp(c, g.gClase, CLASSES);
+        const pm = minorsProb(c, sel.minors, dist);
+        if (!pm) continue;
+        let pp = 0;
+        for (const s of pieces){
+          const ps = sp(s, g.gPiece, GEAR_PIECES);
+          let pt = 1;
+          if (sel.talent !== ANY) pt = c === 'Brand' ? sp(sel.talent, g.gTal['Brand|' + s], gearTalentPool('Brand', s)) : 0;
+          pp += ps * pt;
+        }
+        t += pk * pc * pp * pm;
       }
-      if (!pp) continue;
-      const pcore = sel.core === ANY ? 1 : coreProb(c, sel.core, st);
-      t += pc * pcore * pp * pm;
     }
     return pType * t;
   }
@@ -764,7 +781,7 @@ function matches(d, sel){
   return true;
 }
 function levels(sel){
-  const keys = sel.cat === 'Equipo' ? ['clase','sub','core','minors','talent'] : ['sub','core2','minors','talent'];
+  const keys = sel.cat === 'Equipo' ? ['core','clase','sub','minors','talent'] : ['sub','core2','minors','talent'];
   let cur = blankSel(sel.cat);
   const out = [{key:'cat', sel:cur}];
   for (const k of keys){
@@ -800,6 +817,8 @@ function renderProbForm(){
   })));
 
   if (Q.cat === 'Equipo'){
+    f.append(field('Atributo core', chips([anyOpt].concat(C().gearCores.map(x => opt(x))), Q.core, v => { Q.core = v; rerender(); }, 2),
+      'se calcula por separado'));
     f.append(field('Clase', chips([anyOpt].concat(CLASSES.map(c => ({v:c, label:CLASS_LABEL[c]}))), Q.clase, v => {
       Q.clase = v;
       while (Q.minors.length > qLimit()) Q.minors.shift();
@@ -811,7 +830,6 @@ function renderProbForm(){
       if (Q.talent !== ANY && !talentPoolQ().includes(Q.talent)) Q.talent = ANY;
       rerender();
     }, 3)));
-    f.append(field('Atributo core', chips([anyOpt].concat(C().gearCores.map(x => opt(x))), Q.core, v => { Q.core = v; rerender(); }, 2)));
     const lim = qLimit();
     f.append(field(lim === 2 ? 'Atributos menores' : 'Atributo menor',
       chips([anyOpt].concat(C().gearMinors.map(x => opt(x))), Q.minors, v => {
@@ -887,23 +905,50 @@ function renderResults(){
     box.append(card('Resultado', h('p', {class:'muted'}, why)));
     return;
   }
-  const rollRows = rows.filter(r => ['core','core2','minors','talent'].includes(r.key));
-  const qRoll = rollRows.reduce((a, r) => a * r.fd, 1);
-  const tRoll = rollRows.reduce((a, r) => a * r.ft, 1);
+  // "Si ya cayó": probabilidad de los atributos pedidos dado que ya salió esa pieza/arma
+  const base = Object.assign(blankSel(Q.cat), {clase: Q.clase, sub: Q.sub});
+  const hasRoll = Q.core !== ANY || Q.core2 !== ANY || Q.minors.length > 0 || Q.talent !== ANY;
+  const pb = prob(base, st), pbT = prob(base, EMPTY);
+  const qRoll = pb > 0 ? p / pb : 0, tRoll = pbT > 0 ? pT / pbT : 0;
+  const coreSel = Q.cat === 'Equipo' && Q.core !== ANY;
+  const nCore = coreSel ? (st.gCore[Q.core] || 0) : 0;
+  const nRef = coreSel ? nCore : N;
 
   // Resultado principal
   const main = card('Probabilidad por drop',
     h('div', {class:'big'}, fmtPct(p)),
     h('div', {class:'sub'}, oneIn(p)),
     h('div', {class:'small muted', style:'margin-top:8px'},
-      N ? 'Estimado con tus ' + fmtInt(N) + ' drops registrados (todas las categorías).'
-        : 'Aún no tienes drops: se asume que todas las opciones son igual de probables.'));
-  if (rollRows.length){
+      !N ? 'Aún no tienes drops: se asume que todas las opciones son igual de probables.'
+      : coreSel ? 'Core ' + Q.core + ': clase, pieza, atributos menores y talento se calculan solo con tus ' + fmtInt(nCore) + ' drops de equipo con ese core.'
+      : Q.cat === 'Equipo' ? 'Suma de los tres cores, cada uno calculado aparte (detalle abajo). Total de drops registrados: ' + fmtInt(N) + '.'
+      : 'Estimado con tus ' + fmtInt(N) + ' drops registrados (todas las categorías).'));
+  if (hasRoll){
     main.append(h('div', {style:'margin-top:10px'},
       kv('Si ya cayó: ' + describeBase(), fmtPct(qRoll), 'teórico: ' + fmtPct(tRoll))));
   }
-  if (N > 0 && N < 30) main.append(h('div', {class:'small warn', style:'margin-top:8px'}, 'Con pocos drops la estimación se apoya sobre todo en el supuesto teórico. Mejora a medida que registras más.'));
+  if (N > 0 && nRef < 30) main.append(h('div', {class:'small warn', style:'margin-top:8px'}, 'Con pocos drops la estimación se apoya sobre todo en el supuesto teórico. Mejora a medida que registras más.'));
   box.append(main);
+
+  // Un resultado por cada atributo core (equipo)
+  if (Q.cat === 'Equipo'){
+    const list = h('div', {class:'corelist'});
+    for (const core of C().gearCores){
+      const s2 = Object.assign({}, Q, {core, minors: Q.minors.slice()});
+      const pc = prob(s2, st);
+      const kc = S.drops.filter(d => matches(d, s2)).length;
+      const on = Q.core === core;
+      list.append(h('button', {type:'button', class:'corerow', 'aria-pressed': on ? 'true' : 'false',
+        onclick: () => { Q.core = on ? ANY : core; renderProb(); }},
+        h('span', {class:'cr-name'}, dot(COLOR[core]), core),
+        h('span', {class:'cr-p'}, fmtPct(pc), h('small', {}, pc > 0 ? '1 de cada ' + fmtInt(1 / pc) : '—')),
+        h('span', {class:'cr-k'}, fmtInt(kc), h('small', {}, 'de ' + fmtInt(st.gCore[core] || 0)))));
+    }
+    box.append(card('Por atributo core',
+      h('div', {class:'corehead'}, h('span', {}, 'Core'), h('span', {}, 'Por drop'), h('span', {}, 'Conseguido')),
+      list,
+      h('p', {class:'small muted', style:'margin:10px 0 0'}, 'Cada core se calcula aparte, con sus propios drops. "Conseguido": veces que te salió esta combinación / drops de equipo con ese core. Toca un core para ver su detalle' + (Q.core !== ANY ? ' (tócalo de nuevo para volver a "Cualquiera").' : '.'))));
+  }
 
   // Con tus drops actuales
   const atLeast = 1 - Math.pow(1 - p, N);
@@ -942,8 +987,8 @@ function renderResults(){
       h('summary', {}, '¿Cómo se calcula?'),
       h('ul', {},
         h('li', {}, 'Cada característica se estima con tus drops como (veces que salió + 1) / (total del grupo + nº de opciones). Con pocos datos se parece al supuesto teórico; con muchos, a lo que realmente te ha caído.'),
-        h('li', {}, 'El atributo core se estima con tus drops de la misma clase: Gear Set y Brand por separado.'),
-        h('li', {}, 'Los atributos menores de equipo se estiman con todas tus piezas. Atributos y talentos de arma, con todas tus armas, limitados a lo que puede salir en ese subtipo. Talentos de Brand, por pieza; en Gear Set el talento viene con el set.'),
+        h('li', {}, 'En equipo, cada atributo core es un grupo aparte: primero se estima qué tan seguido te sale cada core y, dentro de cada uno, la clase, la pieza, los atributos menores y el talento se estiman solo con tus drops de ese core.'),
+        h('li', {}, 'Atributos y talentos de arma se estiman con todas tus armas, limitados a lo que puede salir en ese subtipo. Talentos de Brand, por pieza; en Gear Set el talento viene con el set.'),
         h('li', {}, 'Las probabilidades se multiplican (cada característica sale de forma independiente). En Brand, los dos atributos menores son distintos y se extraen sin repetición.'),
         h('li', {}, 'El loot dirigido y la fuente del drop cambian las probabilidades reales: para comparar, conviene registrar drops de una misma actividad.')))));
 }
@@ -961,7 +1006,9 @@ function renderHist(){
   root.append(card('Resumen', h('div', {class:'stat-grid'},
     h('div', {class:'stat'}, h('b', {}, fmtInt(N)), h('span', {}, 'Total')),
     h('div', {class:'stat'}, h('b', {}, fmtInt(nE)), h('span', {}, 'Equipo')),
-    h('div', {class:'stat'}, h('b', {}, fmtInt(N - nE)), h('span', {}, 'Armas')))));
+    h('div', {class:'stat'}, h('b', {}, fmtInt(N - nE)), h('span', {}, 'Armas'))),
+    nE ? h('div', {class:'tags', style:'margin-top:10px'}, C().gearCores.map(core =>
+      h('span', {class:'tag'}, dot(COLOR[core]), core + ': ' + fmtInt(S.drops.filter(d => d.cat === 'Equipo' && d.core === core).length)))) : null));
 
   const since = S.drops.filter(d => d.ts > S.backupTs).length;
   const backup = card(NATIVE ? 'Datos y respaldo' : 'Respaldo');
