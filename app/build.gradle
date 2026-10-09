@@ -4,7 +4,7 @@ plugins {
 
 // La firma de release viene de variables de entorno (secretos de GitHub Actions).
 // Sin ellas, el APK de release se firma con la clave de depuración (útil para compilar en Android Studio).
-def ksPassword = System.getenv('KEYSTORE_PASSWORD')
+def ksPassword = System.getenv("KEYSTORE_PASSWORD")
 def ksFile = file('release.jks')
 
 android {

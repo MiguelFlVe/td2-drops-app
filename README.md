@@ -11,8 +11,12 @@ Los datos se guardan en un archivo `.json` que eliges en tu teléfono (por ejemp
 ## Compilar con GitHub Actions
 
 Cada `push` a `main` ejecuta `.github/workflows/build.yml` y publica `drops-td2.apk` como artefacto.
-La firma usa los secretos `KEYSTORE_B64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS` y `KEY_PASSWORD`
-(sin ellos se firma con la clave de depuración).
+Cada compilación también publica el APK en **Releases** (descárgalo desde el teléfono en
+`https://github.com/MiguelFlVe/td2-drops-app/releases/latest`).
+
+La clave de firma va cifrada en `app/release.jks.enc`. Para activar una firma estable (actualizaciones
+que se instalan encima sin desinstalar), crea el secreto de Actions `SIGNING_PASSWORD`.
+Sin ese secreto, el APK se firma con una clave de depuración distinta en cada compilación.
 
 ## Compilar en Android Studio
 
