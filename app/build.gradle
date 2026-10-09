@@ -30,6 +30,13 @@ android {
         }
     }
 
+    // Todas las versiones de firma: máxima compatibilidad con instaladores de fabricantes (p. ej. Xiaomi)
+    signingConfigs.configureEach {
+        enableV1Signing true
+        enableV2Signing true
+        enableV3Signing true
+    }
+
     buildTypes {
         release {
             minifyEnabled false
