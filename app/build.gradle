@@ -1,0 +1,44 @@
+plugins {
+    id 'com.android.application'
+}
+
+// La firma de release viene de variables de entorno (secretos de GitHub Actions).
+// Sin ellas, el APK de release se firma con la clave de depuración (útil para compilar en Android Studio).
+def ksPassword = System.getenv('KEYSTORE_PASSWORD')
+def ksFile = file('release.jks')
+
+android {
+    namespace 'app.td2drops'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'app.td2drops'
+        minSdk 26
+        targetSdk 34
+        versionCode Integer.parseInt(System.getenv('VERSION_CODE') ?: '1')
+        versionName System.getenv('VERSION_NAME') ?: '1.0'
+    }
+
+    signingConfigs {
+        if (ksPassword && ksFile.exists()) {
+            release {
+                storeFile ksFile
+                storePassword ksPassword
+                keyAlias System.getenv('KEY_ALIAS')
+                keyPassword System.getenv('KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig = (ksPassword && ksFile.exists()) ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
