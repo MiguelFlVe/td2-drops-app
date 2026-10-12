@@ -125,6 +125,10 @@ details ul{padding-left:18px;margin:6px 0}
 .panel textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
 .warn{color:var(--yellow)}
 .empty{text-align:center;color:var(--muted);padding:28px 10px}
+.basetoggle{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);margin:4px 0 6px;cursor:pointer}
+.basetoggle input{width:22px;height:22px;flex:none;accent-color:var(--accent);margin:0}
+.basetoggle b{display:block;font-size:14px}
+.basetoggle small{display:block;color:var(--muted);font-size:12px}
 .corehead,.corerow{display:grid;grid-template-columns:1.5fr 1fr .9fr;gap:8px;align-items:center}
 .corehead{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;padding:0 12px 6px}
 .corehead span:not(:first-child){text-align:right}
@@ -182,6 +186,8 @@ details ul{padding-left:18px;margin:6px 0}
   </div>
 </nav>
 
+<!-- Datos base incluidos en la app (opcional). Si el archivo no existe, la app funciona igual. -->
+<script src="base-data.js" onerror="window.TD2_BASE = null"></script>
 <script>
 (function(){
 'use strict';
@@ -293,7 +299,7 @@ function migrateDrop(d){
 
 /* ---------- Estado y guardado ---------- */
 const KEY = 'td2-drop-tracker-v1';
-const S = {drops: [], catalog: clone(DEFAULT_CATALOG), backupTs: 0};
+const S = {drops: [], catalog: clone(DEFAULT_CATALOG), backupTs: 0, useBase: true};
 let storageOK = true;
 
 function normalizeCatalog(c){
@@ -325,15 +331,31 @@ function normalizeCatalog(c){
 const NATIVE = !!window.AndroidDB;
 let db = {hasFile:false, name:''}, dbBlocked = false, dbError = '', lastText = '', pendingBackup = false;
 
+/* Datos base: drops que vienen dentro de la app (assets/base-data.js). No aparecen en Historial,
+   pero cuentan en las probabilidades si "Incluir datos base" está activo. */
+const BASE = (() => {
+  const b = window.TD2_BASE;
+  if (!b || !Array.isArray(b.drops)) return null;
+  const drops = b.drops.filter(x => x && typeof x === 'object' && TYPES.includes(x.cat) && x.sub)
+    .map(x => migrateDrop(Object.assign({}, x)));
+  return drops.length ? {label: typeof b.label === 'string' && b.label.trim() ? b.label.trim() : 'Datos base', drops} : null;
+})();
+/* Drops usados para estimar: los tuyos + los base (sin repetir los que ya están en tu archivo) */
+function estDrops(){
+  if (!BASE || !S.useBase) return S.drops;
+  const own = new Set(S.drops.map(d => d.id));
+  return S.drops.concat(BASE.drops.filter(d => !own.has(d.id)));
+}
 function applyData(d){
   const before = JSON.stringify(S.catalog);
+  S.useBase = !(d && d.settings && d.settings.useBase === false);
   S.drops = Array.isArray(d && d.drops) ? d.drops.filter(x => x && typeof x === 'object').map(migrateDrop) : [];
   S.catalog = d && d.catalog ? normalizeCatalog(d.catalog) : clone(DEFAULT_CATALOG);
   S.backupTs = (d && d.backupTs) || 0;
   return JSON.stringify(S.catalog) !== before; // true si cambió el catálogo
 }
 function serialize(){
-  return JSON.stringify({app:'td2-drop-tracker', v:2, updated:new Date().toISOString(), backupTs:S.backupTs, catalog:S.catalog, drops:S.drops}, null, 2);
+  return JSON.stringify({app:'td2-drop-tracker', v:2, updated:new Date().toISOString(), backupTs:S.backupTs, settings:{useBase:S.useBase}, catalog:S.catalog, drops:S.drops}, null, 2);
 }
 function isDbData(d){ return !!d && typeof d === 'object' && !Array.isArray(d) && (Array.isArray(d.drops) || d.app === 'td2-drop-tracker'); }
 function parseDb(text){ try{ const d = JSON.parse(text); return isDbData(d) ? d : null; }catch(e){ return null; } }
@@ -442,7 +464,7 @@ function persist(){
       else { storageOK = false; dbError = 'No se pudo guardar en ' + (db.name || 'el archivo') + ' (' + (r || 'error desconocido') + '). Tus cambios quedan en la copia interna de la app.'; }
     } else nCall('saveCache', text);
   } else {
-    try{ localStorage.setItem(KEY, JSON.stringify({v:2, drops:S.drops, catalog:S.catalog, backupTs:S.backupTs})); storageOK = true; }
+    try{ localStorage.setItem(KEY, JSON.stringify({v:2, drops:S.drops, catalog:S.catalog, backupTs:S.backupTs, settings:{useBase:S.useBase}})); storageOK = true; }
     catch(e){ storageOK = false; }
   }
   updateChrome();
@@ -811,6 +833,9 @@ function renderProbForm(){
   const f = $('#prob-form');
   f.replaceChildren();
   const rerender = () => { renderProbForm(); renderResults(); };
+  if (BASE) f.append(h('label', {class:'basetoggle'},
+    h('input', {type:'checkbox', checked: S.useBase, onchange: e => { S.useBase = e.target.checked; persist(); renderResults(); }}),
+    h('span', {}, h('b', {}, 'Incluir datos base'), h('small', {}, BASE.label + ' · ' + fmtInt(BASE.drops.length) + ' drops que vienen con la app'))));
   f.append(field('Tipo', seg(TYPES.map(t => ({v:t, label:t})), Q.cat, v => {
     if (Q.cat !== v) Object.assign(Q, blankSel(v));
     rerender();
@@ -888,18 +913,20 @@ function describeBase(){
 function renderResults(){
   const box = $('#prob-results');
   box.replaceChildren();
-  const N = S.drops.length;
-  const st = buildStats(S.drops);
+  const own = S.drops, all = estDrops();
+  const N = own.length, NA = all.length, NB = NA - N;   // tuyos, total usado, de la base
+  const st = buildStats(all);
   const lv = levels(Q);
-  let pd0 = 1, pt0 = 1, c0 = N;
+  let pd0 = 1, pt0 = 1, c0 = NA;
   const rows = [];
   for (const l of lv){
     const pd = prob(l.sel, st), pt = prob(l.sel, EMPTY);
-    const c = S.drops.filter(d => matches(d, l.sel)).length;
+    const c = all.filter(d => matches(d, l.sel)).length;
     rows.push({key:l.key, sel:l.sel, fd: pd0 > 0 ? pd / pd0 : 0, ft: pt0 > 0 ? pt / pt0 : 0, c, n:c0});
     pd0 = pd; pt0 = pt; c0 = c;
   }
-  const p = pd0, pT = pt0, k = c0;
+  const p = pd0, pT = pt0;
+  const k = own.filter(d => matches(d, Q)).length;   // veces que TÚ lo conseguiste
   if (!(p > 0)){
     const why = 'Esa combinación no puede salir con el catálogo actual.';
     box.append(card('Resultado', h('p', {class:'muted'}, why)));
@@ -912,22 +939,24 @@ function renderResults(){
   const qRoll = pb > 0 ? p / pb : 0, tRoll = pbT > 0 ? pT / pbT : 0;
   const coreSel = Q.cat === 'Equipo' && Q.core !== ANY;
   const nCore = coreSel ? (st.gCore[Q.core] || 0) : 0;
-  const nRef = coreSel ? nCore : N;
+  const nRef = coreSel ? nCore : NA;
 
   // Resultado principal
   const main = card('Probabilidad por drop',
     h('div', {class:'big'}, fmtPct(p)),
     h('div', {class:'sub'}, oneIn(p)),
     h('div', {class:'small muted', style:'margin-top:8px'},
-      !N ? 'Aún no tienes drops: se asume que todas las opciones son igual de probables.'
-      : coreSel ? 'Core ' + Q.core + ': clase, pieza, atributos menores y talento se calculan solo con tus ' + fmtInt(nCore) + ' drops de equipo con ese core.'
-      : Q.cat === 'Equipo' ? 'Suma de los tres cores, cada uno calculado aparte (detalle abajo). Total de drops registrados: ' + fmtInt(N) + '.'
+      !NA ? 'Aún no tienes drops: se asume que todas las opciones son igual de probables.'
+      : coreSel ? 'Core ' + Q.core + ': clase, pieza, atributos menores y talento se calculan solo con los ' + fmtInt(nCore) + ' drops de equipo con ese core.'
+      : Q.cat === 'Equipo' ? 'Suma de los tres cores, cada uno calculado aparte (detalle abajo). Total de drops usados: ' + fmtInt(NA) + '.'
       : 'Estimado con tus ' + fmtInt(N) + ' drops registrados (todas las categorías).'));
   if (hasRoll){
     main.append(h('div', {style:'margin-top:10px'},
       kv('Si ya cayó: ' + describeBase(), fmtPct(qRoll), 'teórico: ' + fmtPct(tRoll))));
   }
-  if (N > 0 && nRef < 30) main.append(h('div', {class:'small warn', style:'margin-top:8px'}, 'Con pocos drops la estimación se apoya sobre todo en el supuesto teórico. Mejora a medida que registras más.'));
+  if (NB) main.append(h('div', {class:'small muted', style:'margin-top:6px'},
+    'Incluye ' + fmtInt(NB) + ' drops de los datos base (' + BASE.label + ') además de tus ' + fmtInt(N) + '.'));
+  if (NA > 0 && nRef < 30) main.append(h('div', {class:'small warn', style:'margin-top:8px'}, 'Con pocos drops la estimación se apoya sobre todo en el supuesto teórico. Mejora a medida que registras más.'));
   box.append(main);
 
   // Un resultado por cada atributo core (equipo)
@@ -936,18 +965,18 @@ function renderResults(){
     for (const core of C().gearCores){
       const s2 = Object.assign({}, Q, {core, minors: Q.minors.slice()});
       const pc = prob(s2, st);
-      const kc = S.drops.filter(d => matches(d, s2)).length;
+      const kc = own.filter(d => matches(d, s2)).length;
       const on = Q.core === core;
       list.append(h('button', {type:'button', class:'corerow', 'aria-pressed': on ? 'true' : 'false',
         onclick: () => { Q.core = on ? ANY : core; renderProb(); }},
         h('span', {class:'cr-name'}, dot(COLOR[core]), core),
         h('span', {class:'cr-p'}, fmtPct(pc), h('small', {}, pc > 0 ? '1 de cada ' + fmtInt(1 / pc) : '—')),
-        h('span', {class:'cr-k'}, fmtInt(kc), h('small', {}, 'de ' + fmtInt(st.gCore[core] || 0)))));
+        h('span', {class:'cr-k'}, fmtInt(kc), h('small', {}, 'de ' + fmtInt(own.filter(d => d.cat === 'Equipo' && d.core === core).length)))));
     }
     box.append(card('Por atributo core',
       h('div', {class:'corehead'}, h('span', {}, 'Core'), h('span', {}, 'Por drop'), h('span', {}, 'Conseguido')),
       list,
-      h('p', {class:'small muted', style:'margin:10px 0 0'}, 'Cada core se calcula aparte, con sus propios drops. "Conseguido": veces que te salió esta combinación / drops de equipo con ese core. Toca un core para ver su detalle' + (Q.core !== ANY ? ' (tócalo de nuevo para volver a "Cualquiera").' : '.'))));
+      h('p', {class:'small muted', style:'margin:10px 0 0'}, 'Cada core se calcula aparte, con sus propios drops. "Conseguido": veces que te salió esta combinación / tus drops de equipo con ese core. Toca un core para ver su detalle' + (Q.core !== ANY ? ' (tócalo de nuevo para volver a "Cualquiera").' : '.'))));
   }
 
   // Con tus drops actuales
@@ -982,7 +1011,7 @@ function renderResults(){
     h('table', {class:'bd'},
       h('thead', {}, h('tr', {}, h('th', {}, 'Paso'), h('th', {class:'num'}, 'Tus datos'), h('th', {class:'num'}, 'Teórico'))),
       tb),
-    h('p', {class:'small muted', style:'margin:10px 0 0'}, 'Cada fila es la probabilidad de ese paso dado lo anterior. Debajo del porcentaje: veces observadas / drops del paso anterior. El teórico supone que todas las opciones del catálogo son igual de probables; en tipo, clase y pieza depende de la actividad.'),
+    h('p', {class:'small muted', style:'margin:10px 0 0'}, 'Cada fila es la probabilidad de ese paso dado lo anterior. Debajo del porcentaje: veces observadas / drops del paso anterior' + (NB ? ' (tuyos + datos base).' : '.') + ' El teórico supone que todas las opciones del catálogo son igual de probables; en tipo, clase y pieza depende de la actividad.'),
     h('details', {},
       h('summary', {}, '¿Cómo se calcula?'),
       h('ul', {},
@@ -1008,7 +1037,9 @@ function renderHist(){
     h('div', {class:'stat'}, h('b', {}, fmtInt(nE)), h('span', {}, 'Equipo')),
     h('div', {class:'stat'}, h('b', {}, fmtInt(N - nE)), h('span', {}, 'Armas'))),
     nE ? h('div', {class:'tags', style:'margin-top:10px'}, C().gearCores.map(core =>
-      h('span', {class:'tag'}, dot(COLOR[core]), core + ': ' + fmtInt(S.drops.filter(d => d.cat === 'Equipo' && d.core === core).length)))) : null));
+      h('span', {class:'tag'}, dot(COLOR[core]), core + ': ' + fmtInt(S.drops.filter(d => d.cat === 'Equipo' && d.core === core).length)))) : null,
+    BASE ? h('p', {class:'small muted', style:'margin:10px 0 0'}, 'La app incluye ' + fmtInt(BASE.drops.length) + ' drops base (' + BASE.label + '). No aparecen en esta lista y ' +
+      (S.useBase ? 'sí cuentan' : 'ahora no cuentan') + ' en las probabilidades (se cambia en Probabilidad).') : null));
 
   const since = S.drops.filter(d => d.ts > S.backupTs).length;
   const backup = card(NATIVE ? 'Datos y respaldo' : 'Respaldo');
