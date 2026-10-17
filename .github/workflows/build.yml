@@ -1,4 +1,4 @@
-name: Compilar APK
+name: Build APK
 
 on:
   push:
@@ -19,27 +19,28 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # Firma estable: la clave va cifrada en el repo (app/release.jks.enc).
-      # Se activa con un único secreto: SIGNING_PASSWORD. Sin él, se firma con una clave de depuración.
-      - name: Preparar firma
+      # Stable signature: the key is stored encrypted in the repo (app/release.jks.enc).
+      # It's enabled by a single secret, SIGNING_PASSWORD. Without it, a debug key is used.
+      - name: Prepare signing
         env:
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
         run: |
           if [ -n "$SIGNING_PASSWORD" ] && [ -f app/release.jks.enc ]; then
             openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in app/release.jks.enc -out app/release.jks -pass env:SIGNING_PASSWORD
-            echo "Firma estable activada"
+            echo "Stable signature enabled"
           else
-            echo "Sin SIGNING_PASSWORD: se usará la clave de depuración"
+            echo "No SIGNING_PASSWORD: using a debug key"
           fi
 
-      - name: Compilar
+      - name: Build
         env:
           KEYSTORE_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
           KEY_ALIAS: td2drops
           VERSION_CODE: ${{ github.run_number }}
-          VERSION_NAME: 1.${{ github.run_number }}
         run: |
+          export VERSION_NAME="2.$(( ${{ github.run_number }} - 8 ))"
+          echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
           chmod +x gradlew
           ./gradlew --no-daemon --stacktrace assembleRelease
           mkdir -p out
@@ -51,18 +52,18 @@ jobs:
           name: drops-td2-apk
           path: out/drops-td2.apk
 
-      - name: Publicar versión (Releases)
+      - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="v1.${{ github.run_number }}"
+          TAG="v$VERSION_NAME"
           gh release create "$TAG" out/drops-td2.apk \
             --repo "${{ github.repository }}" \
-            --title "Drops TD2 1.${{ github.run_number }}" \
-            --notes "Descarga **drops-td2.apk** en tu teléfono Android y ábrelo para instalarlo." \
+            --title "Drops TD2 $VERSION_NAME" \
+            --notes "Download **drops-td2.apk** on your Android phone and open it to install. Free, non-profit fan tool; not affiliated with Ubisoft or Massive Entertainment." \
             --latest
 
-      - name: Guardar APK en la rama apk
+      - name: Save APK to the apk branch
         run: |
           mkdir -p /tmp/apkbranch && cp out/drops-td2.apk /tmp/apkbranch/
           cd /tmp/apkbranch
@@ -70,5 +71,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add drops-td2.apk
-          git commit -q -m "APK 1.${{ github.run_number }}"
+          git commit -q -m "APK $VERSION_NAME"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" apk

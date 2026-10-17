@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -10,12 +10,12 @@
 :root{
   --bg:#0e1013; --surface:#171a1f; --surface2:#1f232a; --border:#2b3039; --text:#e9ebef; --muted:#97a0ad;
   --accent:#ff7417; --accent-ink:#1b0c00; --accent-soft:rgba(255,116,23,.14);
-  --red:#f0564f; --blue:#4d8dff; --yellow:#efc23a; --ok:#39c58a; --danger:#f0564f;
+  --red:#f0564f; --blue:#4d8dff; --yellow:#efc23a; --gold:#e8b44c; --gold-soft:rgba(232,180,76,.12); --ok:#39c58a; --danger:#f0564f;
 }
 @media (prefers-color-scheme: light){
   :root{ --bg:#f3f4f6; --surface:#ffffff; --surface2:#f0f2f5; --border:#d8dce2; --text:#14171c; --muted:#5b6370;
     --accent:#e2600a; --accent-ink:#ffffff; --accent-soft:rgba(226,96,10,.12);
-    --red:#d63c35; --blue:#2f6fe0; --yellow:#b88a00; --ok:#1f9a65; --danger:#d63c35; }
+    --red:#d63c35; --blue:#2f6fe0; --yellow:#b88a00; --gold:#9a6b00; --gold-soft:rgba(184,138,0,.10); --ok:#1f9a65; --danger:#d63c35; }
 }
 *{box-sizing:border-box}
 [hidden]{display:none !important}
@@ -27,26 +27,28 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .wrap{max-width:640px;margin:0 auto;padding:0 16px}
 header.app{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--border)}
 .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:10px}
-.brand{display:flex;align-items:center;gap:10px}
+.brandmark{display:flex;align-items:center;gap:10px}
 .logo{width:30px;height:30px;border-radius:8px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:900;font-size:12px}
 .t1{font-weight:800;letter-spacing:.02em}
 .t2{font-size:12px;color:var(--muted)}
 .pill{font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);white-space:nowrap;font-variant-numeric:tabular-nums}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin:12px 0}
 .card h2{font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:700}
-.field{margin:16px 0}
-.field:first-child{margin-top:4px}
+.field{margin:14px 0}
+.field:first-child{margin-top:2px}
 .lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .lbl .hint{text-transform:none;letter-spacing:0;font-weight:500;font-size:12px}
 .seg{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:3px;gap:3px}
-.seg button{flex:1;min-height:42px;border:0;border-radius:9px;background:transparent;font-weight:700}
+.seg button{flex:1;min-height:42px;border:0;border-radius:9px;background:transparent;font-weight:700;font-size:14px;line-height:1.15;padding:4px 6px}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.seg button:disabled{opacity:.4;cursor:not-allowed}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chips.cols-2{display:grid;grid-template-columns:1fr 1fr}
 .chips.cols-3{display:grid;grid-template-columns:repeat(3,1fr)}
 .chip{min-height:42px;padding:8px 11px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);
   font-size:14px;text-align:left;line-height:1.2;display:flex;align-items:center;gap:8px}
 .chip .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.chip small{display:block;color:var(--muted);font-size:12px;font-weight:500;margin-top:2px}
 .chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent);font-weight:600}
 .chip.any{color:var(--muted)}
 .chip.any[aria-pressed="true"]{color:var(--text)}
@@ -62,6 +64,9 @@ select:focus,input:focus,textarea:focus{outline:2px solid var(--accent);outline-
 .muted{color:var(--muted)}
 .small{font-size:13px}
 .note{font-size:13px;color:var(--muted);background:var(--surface2);border-radius:10px;padding:10px 12px}
+.perk{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;border:1px solid var(--gold);background:var(--gold-soft);font-size:14px}
+.perk svg{width:16px;height:16px;flex:none;margin-top:2px;color:var(--gold)}
+.perk small{display:block;color:var(--muted);font-size:12px}
 .btn{min-height:46px;padding:10px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn.primary:disabled{opacity:.45}
@@ -70,6 +75,16 @@ select:focus,input:focus,textarea:focus{outline:2px solid var(--accent);outline-
 .btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .actionbar{position:sticky;bottom:calc(68px + env(safe-area-inset-bottom));z-index:4;background:var(--bg);padding:10px 0 4px;margin-top:4px}
 .actionbar .missing{font-size:12px;color:var(--muted);text-align:center;margin-top:6px;min-height:16px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin:10px 0}
+.step.locked{opacity:.55}
+.step-h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.step.locked .step-h{margin-bottom:4px}
+.step-n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;background:var(--surface2);border:1px solid var(--border);flex:none}
+.step.done .step-n{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.step-t{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.step-s{margin-left:auto;font-size:12px;color:var(--muted);text-align:right;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.locked-hint{font-size:13px;color:var(--muted);padding-left:34px}
+.sub-lbl{font-size:12px;color:var(--muted);margin:12px 0 6px;font-weight:600}
 nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:10;background:var(--surface);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom)}
 nav.tabs .in{max-width:640px;margin:0 auto;display:flex}
 nav.tabs button{flex:1;background:none;border:0;color:var(--muted);padding:9px 4px 10px;font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px}
@@ -80,13 +95,15 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
   box-shadow:0 6px 24px rgba(0,0,0,.35);font-size:14px;width:max-content;max-width:calc(100% - 32px)}
 .toast button{background:none;border:0;color:var(--accent);font-weight:800;padding:4px}
 .banner{margin:12px 0;padding:10px 12px;border-radius:12px;border:1px solid var(--yellow);background:rgba(239,194,58,.12);font-size:13px}
+.banner .acts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.banner .acts .btn{min-height:38px;padding:6px 12px;font-size:13px}
 .big{font-size:42px;font-weight:800;letter-spacing:-.02em;line-height:1.05;font-variant-numeric:tabular-nums}
 .sub{color:var(--muted);margin-top:4px}
 .kv{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid var(--border)}
 .kv:first-of-type{border-top:0}
 .kv .k{color:var(--muted);font-size:14px}
-.kv .v{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
-.kv .v small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.kv .v{font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kv .v small{display:block;font-weight:500;color:var(--muted);font-size:12px;white-space:normal}
 table.bd{width:100%;border-collapse:collapse;font-size:13px}
 table.bd th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;letter-spacing:.05em;text-transform:uppercase;padding:6px 4px;border-bottom:1px solid var(--border)}
 table.bd td{padding:8px 4px;border-bottom:1px solid var(--border);vertical-align:top;font-variant-numeric:tabular-nums}
@@ -98,19 +115,22 @@ details summary{cursor:pointer;font-weight:700;padding:4px 0}
 details p,details li{font-size:13px;color:var(--muted)}
 details ul{padding-left:18px;margin:6px 0}
 .inline{display:flex;align-items:center;gap:10px}
-.inline input{width:100px;flex:none}
-.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.stat{background:var(--surface2);border-radius:10px;padding:10px;text-align:center}
+.inline input{width:96px;flex:none}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stat{background:var(--surface2);border-radius:10px;padding:10px 4px;text-align:center}
 .stat b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
 .stat span{font-size:12px;color:var(--muted)}
 .drop{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin:8px 0}
 .drop-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .drop-title{font-weight:700}
+.drop-sub{font-size:13px;color:var(--muted)}
 .drop-time{font-size:12px;color:var(--muted)}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .tag{font-size:12px;padding:3px 8px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px}
 .tag .dot{width:7px;height:7px;border-radius:50%}
 .tag.talent{border-color:var(--accent);color:var(--accent)}
+.tag.perk-tag{border-color:var(--gold);color:var(--gold)}
+.tag.rar{font-weight:700}
 .icon-btn{width:36px;height:36px;flex:none;border-radius:10px;border:1px solid var(--border);background:var(--surface2);display:grid;place-items:center;font-size:18px;line-height:1;color:var(--muted)}
 .wt-row{border-top:1px solid var(--border);padding:10px 0}
 .wt-row:first-child{border-top:0}
@@ -118,25 +138,19 @@ details ul{padding-left:18px;margin:6px 0}
 .mini{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .mchip{font-size:12px;padding:6px 9px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted)}
 .mchip[aria-pressed="true"]{border-color:var(--accent);color:var(--text);background:var(--accent-soft)}
-.sub-row{display:grid;gap:8px;padding:10px 0;border-top:1px solid var(--border)}
-.sub-row:first-of-type{border-top:0}
-.sub-row b{font-size:14px}
 .panel{margin-top:10px}
-.panel textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
+.panel textarea,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
 .warn{color:var(--yellow)}
 .empty{text-align:center;color:var(--muted);padding:28px 10px}
-.basetoggle{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);margin:4px 0 6px;cursor:pointer}
+.basetoggle{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);margin:10px 0 0;cursor:pointer}
 .basetoggle input{width:22px;height:22px;flex:none;accent-color:var(--accent);margin:0}
 .basetoggle b{display:block;font-size:14px}
 .basetoggle small{display:block;color:var(--muted);font-size:12px}
-.corehead,.corerow{display:grid;grid-template-columns:1.5fr 1fr .9fr;gap:8px;align-items:center}
-.corehead{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;padding:0 12px 6px}
-.corehead span:not(:first-child){text-align:right}
 .corelist{display:grid;gap:8px}
-.corerow{width:100%;text-align:left;min-height:54px;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface2)}
+.corerow{width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface2)}
 .corerow[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
 .corerow .cr-name{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;line-height:1.2}
-.corerow .cr-p,.corerow .cr-k{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.corerow .cr-p{text-align:right;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .corerow small{display:block;font-weight:500;color:var(--muted);font-size:11px}
 .corerow .dot{width:9px;height:9px;border-radius:50%;flex:none}
 .onboard{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px 16px;overflow:auto}
@@ -145,115 +159,211 @@ details ul{padding-left:18px;margin:6px 0}
 .onboard h1{font-size:22px;line-height:1.25;margin:0 0 8px}
 .onboard p{color:var(--muted);margin:0 0 18px}
 .onboard .btn{margin-top:10px}
-.banner .acts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-.banner .acts .btn{min-height:38px;padding:6px 12px;font-size:13px}
 .dbline{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;font-size:14px}
 .dbline .name{font-weight:700;word-break:break-all}
 .dbline .btn{min-height:36px;padding:6px 12px;font-size:13px;flex:none}
-@media (max-width:360px){ .chips.cols-3{grid-template-columns:1fr 1fr} .big{font-size:36px} }
+@media (max-width:360px){ .chips.cols-3{grid-template-columns:1fr 1fr} .big{font-size:36px} .stat b{font-size:18px} }
 </style>
 </head>
 <body>
 <header class="app">
   <div class="wrap bar">
-    <div class="brand">
+    <div class="brandmark">
       <div class="logo">TD2</div>
-      <div><div class="t1">Drops TD2</div><div class="t2">Registro y probabilidades</div></div>
+      <div><div class="t1">Drops TD2</div><div class="t2">Drop log &amp; roll odds</div></div>
     </div>
     <span id="count" class="pill">0 drops</span>
   </div>
 </header>
 <div class="wrap"><div id="banner" class="banner" hidden></div></div>
 <main class="wrap">
-  <section class="view" data-view="reg"><div id="reg"></div></section>
-  <section class="view" data-view="prob" hidden><div class="card"><div id="prob-form"></div></div><div id="prob-results"></div></section>
+  <section class="view" data-view="log"><div id="log"></div></section>
+  <section class="view" data-view="odds" hidden><div id="odds-form"></div><div id="odds-results"></div></section>
   <section class="view" data-view="hist" hidden><div id="hist"></div></section>
   <section class="view" data-view="cat" hidden><div id="catalog"></div></section>
 </main>
 <div id="onboard" class="onboard" hidden></div>
 <div id="toast" class="toast" hidden></div>
 <input type="file" id="file" accept="application/json,.json,text/plain" hidden>
-<nav class="tabs" aria-label="Secciones">
+<nav class="tabs" aria-label="Sections">
   <div class="in">
-    <button type="button" data-go="reg" aria-current="page">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M12 8v8M8 12h8"/></svg>Registrar</button>
-    <button type="button" data-go="prob">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>Probabilidad</button>
+    <button type="button" data-go="log" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M12 8v8M8 12h8"/></svg>Log drop</button>
+    <button type="button" data-go="odds">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>Odds</button>
     <button type="button" data-go="hist">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>Historial</button>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>History</button>
     <button type="button" data-go="cat">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Catálogo</button>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Catalog</button>
   </div>
 </nav>
 
-<!-- Datos base incluidos en la app (opcional). Si el archivo no existe, la app funciona igual. -->
+<!-- Base data bundled with the app (optional). If the file is missing, the app works the same. -->
 <script src="base-data.js" onerror="window.TD2_BASE = null"></script>
 <script>
 (function(){
 'use strict';
-
-/* ---------- Constantes del juego ---------- */
+/* ================= Game data (defaults; editable in the Catalog tab) ================= */
 const ANY = '*';
-const TYPES = ['Equipo','Arma'];
-const CLASSES = ['Gear','Brand'];
-const CLASS_LABEL = {Gear:'Gear Set', Brand:'Brand'};
-const GEAR_PIECES = ['Máscara','Mochila','Pechera','Guantes','Pistolera','Rodilleras'];
-const TALENT_PIECES = ['Pechera','Mochila'];
-const W_SUBS = ['Rifle','Rifle de Asalto','Rifle de Francotirador','Ametralladora Ligera','Subfusil','Escopeta','Pistola'];
-const W_SHORT = {'Rifle':'Rifle','Rifle de Asalto':'Asalto','Rifle de Francotirador':'Franco.','Ametralladora Ligera':'AL','Subfusil':'Subfusil','Escopeta':'Escopeta','Pistola':'Pistola'};
-const COLOR = {
-  'Daño de arma':'red','Blindaje':'blue','Nivel de habilidad':'yellow',
-  'Probabilidad de crítico':'red','Daño crítico':'red','Daño de disparo a la cabeza':'red','Manejo de armas':'red',
-  'Salud':'blue','Regeneración de blindaje':'blue','Protección contra peligros':'blue','Resistencia a explosivos':'blue',
-  'Daño de habilidad':'yellow','Celeridad de habilidad':'yellow','Reparación de habilidades':'yellow','Efectos de estado':'yellow'
+const HE = 'High End', NAMED = 'Named', GS = 'Gear Set';
+const CATS = ['brand', 'gear', 'weapon'];
+const CAT_LABEL = {brand:'Brand Set', gear:'Gear Set', weapon:'Weapon'};
+const CORES = ['Weapon Damage', 'Armor', 'Skill Tier'];
+const GEAR_SLOTS = ['Mask', 'Backpack', 'Chest', 'Gloves', 'Holster', 'Kneepads'];
+const TALENT_SLOTS = ['Chest', 'Backpack'];
+const WEAPON_TYPES = ['Rifle', 'Marksman Rifle', 'Assault Rifle', 'Submachine Gun', 'Light Machine Gun', 'Shotgun', 'Pistol'];
+const W_SHORT = {'Rifle':'Rifle', 'Marksman Rifle':'MMR', 'Assault Rifle':'AR', 'Submachine Gun':'SMG', 'Light Machine Gun':'LMG', 'Shotgun':'Shotgun', 'Pistol':'Pistol'};
+const WEAPON_CORE = {
+  'Rifle':             {core1:'Rifle Damage',             core2:'Critical Hit Damage'},
+  'Marksman Rifle':    {core1:'Marksman Rifle Damage',    core2:'Headshot Damage'},
+  'Assault Rifle':     {core1:'Assault Rifle Damage',     core2:'Damage to Health'},
+  'Submachine Gun':    {core1:'SMG Damage',               core2:'Critical Hit Chance'},
+  'Light Machine Gun': {core1:'LMG Damage',               core2:'Damage to Targets Out of Cover'},
+  'Shotgun':           {core1:'Shotgun Damage',           core2:'Damage to Armor'},
+  'Pistol':            {core1:'Pistol Damage',            core2:null}
 };
-/* La versión 1.5 guardó el core como color; se convierte de vuelta al nombre del atributo */
-const CORE_LEGACY = {'Rojo':'Daño de arma', 'Azul':'Blindaje', 'Amarillo':'Nivel de habilidad'};
-const WT = (n, w) => ({n, w: (w || W_SUBS).slice()});
+const COLOR = {
+  'Weapon Damage':'red', 'Armor':'blue', 'Skill Tier':'yellow',
+  'Critical Hit Chance':'red', 'Critical Hit Damage':'red', 'Headshot Damage':'red', 'Weapon Handling':'red',
+  'Damage to Armor':'red', 'Damage to Health':'red', 'Damage to Targets Out of Cover':'red',
+  'Armor Regeneration':'blue', 'Hazard Protection':'blue', 'Health':'blue', 'Explosive Resistance':'blue',
+  'Skill Damage':'yellow', 'Skill Haste':'yellow', 'Repair Skills':'yellow', 'Status Effects':'yellow'
+};
+const T_ABBR = {AR:'Assault Rifle', LMG:'Light Machine Gun', MMR:'Marksman Rifle', RIF:'Rifle', SG:'Shotgun', SMG:'Submachine Gun', PIS:'Pistol'};
+const WT = (n, types) => ({n, w: types ? types.split(',').map(x => T_ABBR[x.trim()]) : WEAPON_TYPES.slice()});
+const NG = s => { const [n, set, slot, perk] = s.split('|'); return {n, set, slot, perk}; };
+const NW = s => { const [n, type, perk, base] = s.split('|'); return {n, type: T_ABBR[type] || type, perk, base: base || ''}; };
+
 const DEFAULT_CATALOG = {
-  gearCores: ['Daño de arma','Blindaje','Nivel de habilidad'],
-  gearMinors: ['Probabilidad de crítico','Daño crítico','Daño de disparo a la cabeza','Manejo de armas',
-    'Salud','Regeneración de blindaje','Protección contra peligros','Resistencia a explosivos',
-    'Daño de habilidad','Celeridad de habilidad','Reparación de habilidades','Efectos de estado'],
-  gearTalents: {
-    'Brand|Pechera': ['Braced','Companion','Efficient','Empathic Resolve','Entrench','Explosive Delivery','Focus','Glass Cannon',
-      'Gunslinger','Headhunter','Intimidate','Kinetic Momentum','Mad Bomber','Obliterate','Overwatch','Protected Reload',
-      'Reassigned','Skilled','Spark','Spotter','Tag Team','Tamper Proof','Trauma','Unbreakable','Vanguard'],
-    'Brand|Mochila': ['Adrenaline Rush','Bloodsucker','Calculated','Clutch','Combined Arms','Composure','Concussion','Creeping Death',
-      'Energize','Galvanize','Leadership','Opportunistic','Overclock','Protector','Safeguard','Shock and Awe','Tech Support',
-      'Unstoppable Force','Versatile','Vigilance','Wicked']
-  },
-  weapons: {
-    'Rifle': {core1:'Daño de rifle', core2:['Daño crítico']},
-    'Rifle de Asalto': {core1:'Daño de rifle de asalto', core2:['Daño a la salud']},
-    'Rifle de Francotirador': {core1:'Daño de rifle de francotirador', core2:['Daño de disparo a la cabeza']},
-    'Ametralladora Ligera': {core1:'Daño de ametralladora ligera', core2:['Daño a objetivos fuera de cobertura']},
-    'Subfusil': {core1:'Daño de subfusil', core2:['Probabilidad de crítico']},
-    'Escopeta': {core1:'Daño de escopeta', core2:['Daño al blindaje']},
-    'Pistola': {core1:'Daño de pistola', core2:[]}
-  },
-  weaponMinors: ['Probabilidad de crítico','Daño crítico','Daño de disparo a la cabeza','Daño a la salud','Daño al blindaje','Daño a objetivos fuera de cobertura'],
+  v: 3,
+  brands: ['5.11 Tactical','Airaldi Holdings','Alps Summit Armament','Badger Tuff','Belstone Armory','Brazos de Arcabuz',
+    'Česká Výroba s.r.o.','China Light Industries Corporation','Douglas & Harding','Edelweiss GPz','Electrique',
+    'Empress International','Fenris Group AB','Gila Guard','Golan Gear Ltd','Grupo Sombra S.A.','Habsburg Guard',
+    'Hana-U Corporation','Imminence Armaments','Legatus S.p.A.','Lengmo','Murakami Industries','Overlord Armaments',
+    'Palisade Steelworks','Petrov Defense Group','Providence Defense','Richter & Kaiser GmbH','Royal Works',
+    'Shiny Monkey Gear','Sokolov Concern','Unit Alloys','Urban Lookout','Uzina Getica','Walker, Harris & Co.',
+    'Wyvern Wear','Yaahl Gear','Zwiadowka Sp. z o.o.'],
+  gearSets: ['Aces & Eights','Aegis','Breaking Point','Cavalier','Concentrated Company','Core Strength','Eclipse Protocol',
+    'Ember Engine','Foundry Bulwark','Future Initiative','Hard Wired','Heartbreaker','Hotshot',"Hunter's Fury",
+    'Measured Assembly',"Negotiator's Dilemma",'Ongoing Directive','Ortiz: Exuro','Ortiz: Reficere','Refactor','Rigger',
+    "Striker's Battlegear",'System Corruption','Tip of the Spear','Tipping Scales','True Patriot','Umbra Initiative','Virtuoso'],
+  gearAttrs: ['Critical Hit Chance','Critical Hit Damage','Headshot Damage','Weapon Handling',
+    'Armor Regeneration','Hazard Protection','Health','Explosive Resistance',
+    'Skill Damage','Skill Haste','Repair Skills','Status Effects'],
+  weaponAttrs: ['Critical Hit Chance','Critical Hit Damage','Headshot Damage','Damage to Armor','Damage to Health','Damage to Targets Out of Cover'],
+  chestTalents: ['Braced','Efficient','Empathic Resolve','Entrench','Explosive Delivery','Focus','Glass Cannon','Gunslinger',
+    'Headhunter','Intimidate','Kinetic Momentum','Mad Bomber','Obliterate','Overwatch','Protected Reload','Reassigned',
+    'Skilled','Spark','Spotter','Tag Team','Tamper Proof','Trauma','Unbreakable','Vanguard'],
+  backpackTalents: ['Adrenaline Rush','Bloodsucker','Calculated','Clutch','Combined Arms','Companion','Composure','Concussion',
+    'Creeping Death','Energize','Galvanize','Leadership','Opportunistic','Overclock','Protector','Safeguard','Shock and Awe',
+    'Tech Support','Unstoppable Force','Versatile','Vigilance','Wicked'],
   weaponTalents: [
-    WT('Breadbasket'), WT('Close & Personal'), WT('Determined'), WT('Eyeless'), WT('Fast Hands'), WT('Flatline'),
-    WT('Future Perfect'), WT('Ignited'), WT('In Sync'), WT('Killer'), WT('Optimist'), WT('Perpetuation'), WT('Preservation'),
-    WT('Ranger'), WT('Reformation'), WT('Sadist'), WT('Sledgehammer'), WT('Spike'), WT('Steady Handed'), WT('Strained'),
-    WT('Streamline'), WT('Vindictive'),
-    WT('Lucky Shot', ['Rifle','Rifle de Francotirador','Pistola']),
-    WT('Measured', ['Rifle de Asalto','Subfusil','Ametralladora Ligera']),
-    WT('Rifleman', ['Rifle']), WT('Boomerang', ['Rifle']),
-    WT('Near Sighted', ['Rifle de Asalto']), WT('On Empty', ['Rifle de Asalto']), WT('Overflowing', ['Rifle de Asalto']),
-    WT('Naked', ['Rifle de Francotirador']), WT('First Blood', ['Rifle de Francotirador']),
-    WT('Pummel', ['Escopeta']), WT('Pumped Up', ['Escopeta']),
-    WT('Outsider', ['Subfusil']), WT('Unwavering', ['Subfusil']),
-    WT('Unhinged', ['Ametralladora Ligera']), WT('Frenzy', ['Ametralladora Ligera']), WT('Overwhelm', ['Ametralladora Ligera']),
-    WT('Salvage', ['Pistola']), WT('Finisher', ['Pistola'])
-  ]
+    WT('Breadbasket'), WT('Close & Personal'), WT('Eyeless'), WT('Fast Hands'), WT('Flatline'), WT('Future Perfect'),
+    WT('Head Scratcher'), WT('Ignited'), WT('Immobilize'), WT('In Sync'), WT('Killer'), WT('Optimist'), WT('Perpetuation'),
+    WT('Pressure Point'), WT('Preservation'), WT('Ranger'), WT('Reformation'), WT('Sadist'), WT('Sledgehammer'),
+    WT('Soft Spot'), WT('Spike'), WT('Steady Handed'), WT('Strained'), WT('Streamline'), WT('Thunder Strike'), WT('Vindictive'),
+    WT('Back and Forth', 'AR,LMG,MMR,RIF,SG,SMG'), WT('Behind You', 'MMR,RIF'), WT('Boiling Point', 'AR,LMG,SMG'),
+    WT('Boomerang', 'RIF'), WT('Brazen', 'SG'), WT('Determined', 'MMR,PIS,RIF'), WT('Finisher', 'PIS'), WT('First Blood', 'MMR'),
+    WT('Frenzy', 'LMG'), WT('Lucky Shot', 'MMR,PIS,RIF'), WT('Measured', 'AR,LMG,SMG'), WT('Naked', 'MMR'),
+    WT('Near Sighted', 'AR'), WT('On Empty', 'AR'), WT('Outsider', 'SMG'), WT('Overflowing', 'AR'), WT('Overwhelm', 'LMG'),
+    WT('Precision Strike', 'AR,LMG,MMR,RIF'), WT('Pummel', 'SG'), WT('Pumped Up', 'SG'), WT('Rifleman', 'RIF'),
+    WT('Salvage', 'PIS'), WT('Stabilize', 'AR,SMG'), WT('Unhinged', 'LMG'), WT('Unwavering', 'SMG')
+  ],
+  namedGear: [
+    "Ammo Dump|Badger Tuff|Holster|Ammo Capacity", "Anarchist's Cookbook|Golan Gear Ltd|Backpack|Perfectly Wicked",
+    "Axel|Shiny Monkey Gear|Backpack|Perfect Energize", "Backbone|Lengmo|Backpack|Perfectly Unstoppable Force",
+    "Battery Pack|Empress International|Backpack|Perfectly Calculated", "Benefactor|Edelweiss GPz|Chest|Perfect Empathic Resolve",
+    "Bober|Zwiadowka Sp. z o.o.|Chest|Perfect Entrench", "Bulldog|Royal Works|Backpack|Perfect Composure",
+    "Caesar's Guard|Empress International|Chest|Perfectly Skilled", "Cap'n|Imminence Armaments|Backpack|Perfect Leadership",
+    "Carpenter|Lengmo|Chest|Perfectly Mad Bomber", "Chainkiller|Walker, Harris & Co.|Chest|Perfect Headhunter",
+    "Cherished|Habsburg Guard|Chest|Perfect Trauma", "Chill Out|Gila Guard|Mask|Extra mod slot (1 attribute only)",
+    "Claws Out|Wyvern Wear|Holster|Melee Damage + Pistol Damage", "Cloak|Imminence Armaments|Kneepads|Reduced Threat",
+    "Closer|Uzina Getica|Chest|Perfect Spotter", "Combustor|Palisade Steelworks|Chest|Perfectly Explosive Delivery",
+    "Contractor's Gloves|Petrov Defense Group|Gloves|Damage to Armor", "Deathgrips|5.11 Tactical|Gloves|Armor on Kill",
+    "Devil's Due|Česká Výroba s.r.o.|Backpack|Perfect Clutch", "Door-Kicker's Knock|Grupo Sombra S.A.|Chest|Perfect Spark",
+    "Eagle's Grasp|Zwiadowka Sp. z o.o.|Gloves|Weapon Handling", "Emperor's Guard|Murakami Industries|Kneepads|Armor Regeneration",
+    "Equalizer|Unit Alloys|Chest|Perfect Obliterate", "Everyday Carrier|Belstone Armory|Chest|Perfectly Efficient",
+    "Ferocious Calm|Fenris Group AB|Chest|Perfect Overwatch", "Festive Delivery|Grupo Sombra S.A.|Backpack|Fireworks Show",
+    "Firm Handshake|Sokolov Concern|Gloves|Extra Status Effects", "Force Multiplier|Hana-U Corporation|Backpack|Perfect Combined Arms",
+    "Forge|Richter & Kaiser GmbH|Holster|Shield Health", "Fox's Prayer|Overlord Armaments|Kneepads|Damage to Targets Out of Cover",
+    "Grease|Shiny Monkey Gear|Kneepads|Extra Status Effects", "Henri|Electrique|Chest|Perfect Companion",
+    "Hermano|Brazos de Arcabuz|Backpack|Perfect Overclock", "Hunter-Killer|Golan Gear Ltd|Chest|Perfect Intimidate",
+    "Impetus|Wyvern Wear|Chest|Perfect Kinetic Momentum", "Keeper|5.11 Tactical|Backpack|Perfect Protector",
+    "Lavoisier|Electrique|Backpack|Perfect Galvanize", "Liquid Engineer|Belstone Armory|Backpack|Perfect Bloodsucker",
+    "Matador|Walker, Harris & Co.|Backpack|Perfect Adrenaline Rush", "Melon Baller|Airaldi Holdings|Backpack|Perfect Concussion",
+    "Momma Badger|Edelweiss GPz|Backpack|Perfect Safeguard", "Motherly Love|Alps Summit Armament|Gloves|Skill Health",
+    "Nightwatcher|Gila Guard|Mask|Scanner Pulse Haste", "Percussive Maintenance|Alps Summit Armament|Backpack|Perfect Tech Support",
+    "Picaro's Holster|Brazos de Arcabuz|Holster|Weapon Damage", "Pointman|Gila Guard|Chest|Perfect Vanguard",
+    "Pristine Example|Airaldi Holdings|Chest|Perfect Focus", "Proxy|Palisade Steelworks|Backpack|Perfectly Tamper Proof",
+    "Punch Drunk|Douglas & Harding|Mask|Extra Headshot Damage", "Robin|Royal Works|Chest|Perfect Gunslinger",
+    "Rushdown|Richter & Kaiser GmbH|Chest|Tag Team", "Salvo|Unit Alloys|Holster|Rate of Fire",
+    "Sleight|Urban Lookout|Chest|Perfect Protected Reload", "Snow Machine|Electrique|Kneepads|Flurry",
+    "Spot-On|Urban Lookout|Holster|Accuracy", "Strategic Alignment|China Light Industries Corporation|Backpack|Perfect Shock and Awe",
+    "The Courier|Habsburg Guard|Backpack|Perfect Creeping Death", "The Gift|Providence Defense|Backpack|Perfect Vigilance",
+    "The Hollow Man|Yaahl Gear|Mask|Damage to Health", "The Sacrifice|Providence Defense|Chest|Perfect Glass Cannon",
+    "The Setup|Uzina Getica|Backpack|Perfectly Opportunistic", "Trick Shot|Imminence Armaments|Chest|Perfect Reassigned",
+    "Turmoil|Česká Výroba s.r.o.|Kneepads|Bewildered", "Vedmedytsya Vest|Petrov Defense Group|Chest|Perfect Braced",
+    "Vigil|Legatus S.p.A.|Backpack|Perfect Versatile", "Visionario|Legatus S.p.A.|Mask|Extra Optimal Range",
+    "Zero F's|Badger Tuff|Chest|Perfect Unbreakable"
+  ].map(NG),
+  namedWeapons: [
+    // Assault Rifles
+    "Born Great|AR|Perfect Stabilize|Military G36", "Burn Out|AR|Perfect On Empty|FAMAS", "Caretaker|AR|Perfect Killer|G36 Enhanced",
+    "First Bloom|AR|Blossom Harvest|PDR", "First Sight|AR|+30% Headshot Damage, -50% Reload Speed|AK-M",
+    "Glory Daze|AR|Perfectly Near Sighted|P416", "Goalie|AR|Perfect Pressure Point|FAL", "Huntsman|AR|Perfect Frenzy|FAMAS",
+    "Invisible Hand|AR|Perfect Allegro|AUG", "Kingbreaker|AR|Perfect Flatline|TKB-408", "Lexington|AR|+1,782 Base Damage|Police M4",
+    "Lud|AR|Perfect Streamline|SOCOM Mk16", "Manic|AR|Perfectly Overflowing|Black Market AK-M",
+    "Mechanical Animal|AR|Future Perfection|SIG 556", "Pyromaniac|AR|Perfectly Ignited|M4",
+    "Savage Wolverine|AR|Perfectly Close & Personal|Honey Badger", "Shield Splinterer|AR|Perfect Optimist|F2000",
+    "Steamer|AR|Perfect Boiling Point|", "Test Subject|AR|Perfectly In Sync|PDR", "The Archivist|AR|Perfect Ranger|ACR-E",
+    "The Drill|AR|Perfect Precision Strike|Carbine 7", "The Railsplitter|AR|Perfectly Accurate|CTAR-21",
+    // Rifles
+    "Achilles|RIF|Perfect Soft Spot|USC .45 ACP", "Artist's Tool|RIF|Perfect Rifleman|SIG 716", "Baker's Dozen|RIF|Perfect Lucky Shot|M1A",
+    "Brain Break|RIF|Perfect Head Scratcher|", "Cooler|RIF|Refreshing|M1A CQB", "Everlasting Gaze|RIF|Perfect Perpetuation|Police Mk17",
+    "Harmony|RIF|Perfectly In Sync|Resolute Mk47", "Lichtenberg|RIF|Run and Gun|", "Stage Left|RIF|Perfect Sledgehammer|SOCOM M1A",
+    "Surge|RIF|Perfect Spike|LVOA-C", "The Virginian|RIF|Perfect Boomerang|1886", "Trader|RIF|Perfect Back and Forth|ACR SS",
+    "Whisper|RIF|Perfectly Behind You|M16A2",
+    // Marksman Rifles
+    "Adrestia|MMR|Unique talent|SR-1", "Brutus|MMR|Perfectly Behind You|M700 Carbon", "Commando|MMR|Perfectly Naked|Paratrooper SVD",
+    "Designated Hitter|MMR|Perfect Reformation|SR-1", "Ekim's Long Stick|MMR|Perfect Ranger|Model 700",
+    "Handbasket|MMR|+230,326 Base Damage, -200 RPM|Surplus SVD", "Incendia|MMR|Perfect Lucky Shot|",
+    "Instigator|MMR|Perfect Soft Spot|Custom M44", "Oh Carol|MMR|137% Headshot Damage + Twinkling Lights|M44",
+    "Pinprick|MMR|Perfect First Blood|SRS", "Relic|MMR|Perfectly Determined|G28", "Scalpel|MMR|Future Perfection|Tactical .308",
+    "The Darkness|MMR|Perfect Eyeless|Mk20 SSR", "The White Death|MMR|137% Headshot Damage|M44",
+    // Submachine Guns
+    "Cabaret|SMG|Perfect Thunder Strike|MP5 ST", "Cold Relations|SMG|Perfectly Strained|Enhanced PP-19",
+    "Dark Winter|SMG|Perfect Killer|Vector SBR .45 ACP", "Emeline's Guard|SMG|Perfect Preservation|P90",
+    "Froth|SMG|Perfect Immobilize|Tactical Vector SBR 9mm", "Grown Great|SMG|Perfect Stabilize|Tommy Gun",
+    "Interchange|SMG|Perfect Back and Forth|Enhanced AUG A3P", "Old Glory|SMG|Perfectly Close & Personal|",
+    "Purist|SMG|Perfect Streamline|Converted SMG-9 A2", "Safety Distance|SMG|Perfect Outsider|MPX",
+    "Slingshot|SMG|+45 Optimal Range|Tactical UMP-45", "Swap Chain|SMG|Perfect Unwavering|MP7",
+    "The Apartment|SMG|Perfectly Measured|MPX", "The Grudge|SMG|Perfectly Vindictive|CMMG Banshee",
+    // Light Machine Guns
+    "Bellringer|LMG|Unique talent|Infantry MG5", "Big Show|LMG|Perfect Thunder Strike|MG5", "Black Friday|LMG|Perfectly Unhinged|M249",
+    "Carnage|LMG|Perfect Sadist|Negev", "Cricket|LMG|Perfect Precision Strike|GR9", "Dare|LMG|Perfect Flatline|GR9",
+    "Gear Shift|LMG|Perfectly Measured|MK46", "Good Times|LMG|Perfect Fast Hands|M60", "Insult to Injury|LMG|Perfect Head Scratcher|",
+    "New Reliable|LMG|Perfectly Optimized|RPK-74", "Quiet Roar|LMG|Perfect Overwhelm|Stoner LAMG", "Rusty|LMG|Perfect Pressure Point|Classic RPK",
+    "Sleipnir|LMG|Perfect Frenzy|MG5", "Tabula Rasa|LMG|Perfectly Steady Handed|L86", "The Headline-grabber|LMG|Perfectly Strained|Military M60",
+    "The Stinger|LMG|Swift|M249",
+    // Shotguns
+    "Backup Boomstick|SG|17% Shotgun Damage core|Sawed Off", "Boomstick|SG|Perfect Pumped Up|Double Barrel",
+    "Cuélebre|SG|Perfect Jazz Hands|Military M870", "Enforcer|SG|Perfect Pummel|Super 90", "Firestarter|SG|Primer Rounds|Sawed Off",
+    "Lefty|SG|Perfect Sledgehammer|ACS-12", "Like Glue|SG|Perfect Brazen|Super 90", "Lockdown|SG|Perfect Immobilize|M870 Express",
+    "Rock n' Roll|SG|Perfectly Extra|ACS-12", "Stack Broker|SG|Unique talent|", "The Mop|SG|10% Armor on Kill|Six12",
+    "The Send-Off|SG|Perfect Distance|KSG", "Thorn|SG|Perfect Brazen|SPAS-12", "Tsunami|SG|Perfect Pummel|SASG-12",
+    // Pistols
+    "Diceros Special|PIS|Perfect Optimist|Diceros", "Lightning Rod|PIS|Perfect Salvage|PF45", "Maxim 9|PIS|Perfect Spike|Maxim 9",
+    "Mozambique Special|PIS|Perfect Breadbasket|M45A1", "Orbit|PIS|Perfect Finisher|586 Magnum", "P320 XCompact|PIS|Perfect Preservation|P320",
+    "Prophet|PIS|Perfectly Determined|Police 686 Magnum", "Quickstep|PIS|Sport Mode|M1911", "Rabid D50|PIS|Foam at the Mouth|D50",
+    "Sharpshooter's 93R|PIS|Perfect Unwavering|93R", "Survivalist D50|PIS|Perfect Sadist|D50",
+    "TDI \"Kard\" Custom|PIS|+1 Skill Tier while equipped|KARD-45", "The Harvest|PIS|+10% Base Damage, -7% Rate of Fire|Police 686 Magnum"
+  ].map(NW)
 };
 
-/* ---------- Utilidades ---------- */
+/* ================= Utilities ================= */
 const $ = (s, r) => (r || document).querySelector(s);
 const clone = o => JSON.parse(JSON.stringify(o));
-const coll = (a, b) => a.localeCompare(b, 'es');
+const coll = (a, b) => a.localeCompare(b, 'en', {sensitivity:'base'});
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 function h(tag, props, ...kids){
   const el = document.createElement(tag);
@@ -272,112 +382,137 @@ function h(tag, props, ...kids){
   return el;
 }
 const dot = c => c ? h('span', {class:'dot c-' + c}) : null;
+const LOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+function lockIcon(){ const s = h('span'); s.innerHTML = LOCK_SVG; return s.firstChild; }
 function fmtPct(p){
-  if (!isFinite(p) || p <= 0) return '0\u00a0%';
+  if (!isFinite(p) || p <= 0) return '0%';
   const v = p * 100;
   let s;
-  if (v >= 99.95) s = '100';
-  else if (v >= 10) s = v.toLocaleString('es-CO', {maximumFractionDigits:1});
-  else if (v >= 1) s = v.toLocaleString('es-CO', {maximumFractionDigits:2});
-  else s = v.toLocaleString('es-CO', {maximumSignificantDigits:3});
-  return s + '\u00a0%';
+  if (p >= 1) s = '100';
+  else if (v >= 99.95) return '>99.9%';
+  else if (v >= 10) s = v.toLocaleString('en-US', {maximumFractionDigits:1});
+  else if (v >= 1) s = v.toLocaleString('en-US', {maximumFractionDigits:2});
+  else s = v.toLocaleString('en-US', {maximumSignificantDigits:3});
+  return s + '%';
 }
-const fmtInt = n => isFinite(n) ? Math.round(n).toLocaleString('es-CO') : '∞';
+const fmtInt = n => isFinite(n) ? Math.round(n).toLocaleString('en-US') : '∞';
 const fmtNum = (n, d) => (n > 0 && n < 0.01)
-  ? n.toLocaleString('es-CO', {maximumSignificantDigits: 2})
-  : n.toLocaleString('es-CO', {maximumFractionDigits: d == null ? 1 : d});
-const oneIn = p => p > 0 ? '≈ 1 de cada ' + fmtInt(1 / p) + ' drops' : '—';
+  ? n.toLocaleString('en-US', {maximumSignificantDigits: 2})
+  : n.toLocaleString('en-US', {maximumFractionDigits: d == null ? 1 : d});
+const plural = (n, one, many) => fmtInt(n) + ' ' + (n === 1 ? one : (many || one + 's'));
 function needed(p, q){ if (p <= 0) return Infinity; if (p >= 1) return 1; return Math.ceil(Math.log(1 - q) / Math.log(1 - p)); }
 function parseLines(t){ const seen = new Set(); return t.split(/\r?\n/).map(s => s.trim()).filter(s => s && !seen.has(s) && seen.add(s)); }
 function cleanList(a){ return Array.isArray(a) ? a.filter(x => typeof x === 'string' && x.trim()).map(x => x.trim()) : null; }
-/* Versión anterior: el Gear Set se guardaba como talento de la pechera/mochila */
-function migrateDrop(d){
-  if (d && d.cat === 'Equipo' && d.clase === 'Gear' && d.talent && !d.set){ d.set = d.talent; d.talent = null; }
-  if (d && d.cat === 'Equipo' && CORE_LEGACY[d.core]) d.core = CORE_LEGACY[d.core];
-  return d;
-}
+function inc(o, k){ if (k == null || k === '') return; o[k] = (o[k] || 0) + 1; }
 
-/* ---------- Estado y guardado ---------- */
+/* ================= Migration from v1.x (Spanish) data ================= */
+const ES = {
+  core: {'Daño de arma':'Weapon Damage', 'Blindaje':'Armor', 'Nivel de habilidad':'Skill Tier', 'Rojo':'Weapon Damage', 'Azul':'Armor', 'Amarillo':'Skill Tier'},
+  attr: {'Probabilidad de crítico':'Critical Hit Chance', 'Daño crítico':'Critical Hit Damage', 'Daño de disparo a la cabeza':'Headshot Damage',
+    'Manejo de armas':'Weapon Handling', 'Salud':'Health', 'Regeneración de blindaje':'Armor Regeneration', 'Protección contra peligros':'Hazard Protection',
+    'Resistencia a explosivos':'Explosive Resistance', 'Daño de habilidad':'Skill Damage', 'Celeridad de habilidad':'Skill Haste',
+    'Reparación de habilidades':'Repair Skills', 'Efectos de estado':'Status Effects', 'Daño a la salud':'Damage to Health',
+    'Daño al blindaje':'Damage to Armor', 'Daño a objetivos fuera de cobertura':'Damage to Targets Out of Cover'},
+  slot: {'Máscara':'Mask', 'Mochila':'Backpack', 'Pechera':'Chest', 'Guantes':'Gloves', 'Pistolera':'Holster', 'Rodilleras':'Kneepads'},
+  wtype: {'Rifle':'Rifle', 'Rifle de Asalto':'Assault Rifle', 'Rifle de Francotirador':'Marksman Rifle', 'Ametralladora Ligera':'Light Machine Gun',
+    'Subfusil':'Submachine Gun', 'Escopeta':'Shotgun', 'Pistola':'Pistol'},
+  brand: {'Airaldi':'Airaldi Holdings', 'Alps Summit':'Alps Summit Armament', 'Ceska Vyroba':'Česká Výroba s.r.o.',
+    'China Light':'China Light Industries Corporation', 'Fenris Group':'Fenris Group AB', 'Golan Gear':'Golan Gear Ltd',
+    'Grupo Sombra':'Grupo Sombra S.A.', 'Hana-U':'Hana-U Corporation', 'Legatus':'Legatus S.p.A.', 'Richter & Kaiser':'Richter & Kaiser GmbH',
+    'Sokolov':'Sokolov Concern', 'Walker, Harris & Co':'Walker, Harris & Co.', 'Zwiadowka':'Zwiadowka Sp. z o.o.'}
+};
+/* Returns a drop in the current format, or null if it can't be read */
+function migrateDrop(d){
+  if (!d || typeof d !== 'object') return null;
+  if (CATS.includes(d.cat)){
+    return {id: d.id || uid(), ts: d.ts || 0, cat: d.cat, set: d.set || null, slot: d.slot || null,
+      rarity: d.rarity || (d.cat === 'gear' ? GS : HE), named: d.named || null, core: d.core || null,
+      attrs: Array.isArray(d.attrs) ? d.attrs.slice() : [], talent: d.talent || null, note: d.note || undefined};
+  }
+  const attrs = (Array.isArray(d.minors) ? d.minors : []).map(m => ES.attr[m] || m);
+  if (d.cat === 'Equipo'){
+    const cat = d.clase === 'Gear' ? 'gear' : 'brand';
+    let set = d.set || (cat === 'gear' && d.talent ? d.talent : null);   // v1.0 stored the Gear Set as the talent
+    if (set) set = ES.brand[set] || set;
+    return {id: d.id || uid(), ts: d.ts || 0, cat, set, slot: ES.slot[d.sub] || d.sub || null, rarity: cat === 'gear' ? GS : HE, named: null,
+      core: ES.core[d.core] || d.core || null, attrs, talent: cat === 'brand' ? (d.talent || null) : null, note: d.note || undefined};
+  }
+  if (d.cat === 'Arma'){
+    return {id: d.id || uid(), ts: d.ts || 0, cat: 'weapon', set: null, slot: ES.wtype[d.sub] || d.sub || null, rarity: HE, named: null,
+      core: null, attrs, talent: d.talent || null, note: d.note || undefined};
+  }
+  return null;
+}
+const migrateAll = arr => (Array.isArray(arr) ? arr : []).map(migrateDrop).filter(d => d && d.slot);
+
+/* ================= State & storage ================= */
 const KEY = 'td2-drop-tracker-v1';
 const S = {drops: [], catalog: clone(DEFAULT_CATALOG), backupTs: 0, useBase: true};
 let storageOK = true;
 
 function normalizeCatalog(c){
   const d = clone(DEFAULT_CATALOG);
-  if (!c || typeof c !== 'object') return d;
-  const out = {
-    gearCores: [...new Set((cleanList(c.gearCores) || d.gearCores).map(x => CORE_LEGACY[x] || x))],
-    gearMinors: cleanList(c.gearMinors) || d.gearMinors,
-    weaponMinors: cleanList(c.weaponMinors) || d.weaponMinors,
-    gearTalents: {}, weapons: {}, weaponTalents: d.weaponTalents
-  };
-  for (const k of Object.keys(d.gearTalents)) out.gearTalents[k] = cleanList(c.gearTalents && c.gearTalents[k]) || d.gearTalents[k];
-  for (const s of W_SUBS){
-    const w = (c.weapons && c.weapons[s]) || {};
-    out.weapons[s] = {
-      core1: typeof w.core1 === 'string' ? w.core1.trim() : d.weapons[s].core1,
-      core2: cleanList(w.core2) || d.weapons[s].core2
-    };
-  }
-  if (Array.isArray(c.weaponTalents)){
-    out.weaponTalents = c.weaponTalents
-      .filter(t => t && typeof t.n === 'string' && t.n.trim())
-      .map(t => ({n: t.n.trim(), w: (Array.isArray(t.w) ? t.w : []).filter(x => W_SUBS.includes(x))}));
-  }
+  if (!c || typeof c !== 'object' || c.v !== 3) return d;   // older (Spanish) catalogs are replaced
+  const list = k => cleanList(c[k]) || d[k];
+  const out = {v: 3, brands: list('brands'), gearSets: list('gearSets'), gearAttrs: list('gearAttrs'), weaponAttrs: list('weaponAttrs'),
+    chestTalents: list('chestTalents'), backpackTalents: list('backpackTalents')};
+  out.weaponTalents = Array.isArray(c.weaponTalents)
+    ? c.weaponTalents.filter(t => t && typeof t.n === 'string' && t.n.trim()).map(t => ({n: t.n.trim(), w: (Array.isArray(t.w) ? t.w : []).filter(x => WEAPON_TYPES.includes(x))}))
+    : d.weaponTalents;
+  out.namedGear = Array.isArray(c.namedGear)
+    ? c.namedGear.filter(x => x && x.n && x.set && GEAR_SLOTS.includes(x.slot)).map(x => ({n: String(x.n), set: String(x.set), slot: x.slot, perk: String(x.perk || 'Unique perk')}))
+    : d.namedGear;
+  out.namedWeapons = Array.isArray(c.namedWeapons)
+    ? c.namedWeapons.filter(x => x && x.n && WEAPON_TYPES.includes(x.type)).map(x => ({n: String(x.n), type: x.type, perk: String(x.perk || 'Unique talent'), base: String(x.base || '')}))
+    : d.namedWeapons;
   return out;
 }
-/* Dentro de la app Android existe window.AndroidDB: los datos viven en un archivo .json elegido por el usuario.
-   En un navegador normal se usa localStorage, como antes. */
-const NATIVE = !!window.AndroidDB;
-let db = {hasFile:false, name:''}, dbBlocked = false, dbError = '', lastText = '', pendingBackup = false;
 
-/* Datos base: drops que vienen dentro de la app (assets/base-data.js). No aparecen en Historial,
-   pero cuentan en las probabilidades si "Incluir datos base" está activo. */
+/* Base data: drops bundled with the app (assets/base-data.js). Not shown in History, but used for the odds
+   while "Include base data" is on. Drops that are also in your own file (same id) are not counted twice. */
 const BASE = (() => {
   const b = window.TD2_BASE;
   if (!b || !Array.isArray(b.drops)) return null;
-  const drops = b.drops.filter(x => x && typeof x === 'object' && TYPES.includes(x.cat) && x.sub)
-    .map(x => migrateDrop(Object.assign({}, x)));
-  return drops.length ? {label: typeof b.label === 'string' && b.label.trim() ? b.label.trim() : 'Datos base', drops} : null;
+  const drops = migrateAll(b.drops);
+  return drops.length ? {label: typeof b.label === 'string' && b.label.trim() ? b.label.trim() : 'Base data', drops} : null;
 })();
-/* Drops usados para estimar: los tuyos + los base (sin repetir los que ya están en tu archivo) */
 function estDrops(){
   if (!BASE || !S.useBase) return S.drops;
   const own = new Set(S.drops.map(d => d.id));
   return S.drops.concat(BASE.drops.filter(d => !own.has(d.id)));
 }
+
+const NATIVE = !!window.AndroidDB;
+let db = {hasFile:false, name:''}, dbBlocked = false, dbError = '', lastText = '', pendingBackup = false;
+
 function applyData(d){
   const before = JSON.stringify(S.catalog);
   S.useBase = !(d && d.settings && d.settings.useBase === false);
-  S.drops = Array.isArray(d && d.drops) ? d.drops.filter(x => x && typeof x === 'object').map(migrateDrop) : [];
+  S.drops = migrateAll(d && d.drops);
   S.catalog = d && d.catalog ? normalizeCatalog(d.catalog) : clone(DEFAULT_CATALOG);
   S.backupTs = (d && d.backupTs) || 0;
-  return JSON.stringify(S.catalog) !== before; // true si cambió el catálogo
+  return JSON.stringify(S.catalog) !== before;   // true if the catalog changed
 }
 function serialize(){
-  return JSON.stringify({app:'td2-drop-tracker', v:2, updated:new Date().toISOString(), backupTs:S.backupTs, settings:{useBase:S.useBase}, catalog:S.catalog, drops:S.drops}, null, 2);
+  return JSON.stringify({app:'td2-drop-tracker', v:3, updated:new Date().toISOString(), backupTs:S.backupTs,
+    settings:{useBase:S.useBase}, catalog:S.catalog, drops:S.drops}, null, 2);
 }
 function isDbData(d){ return !!d && typeof d === 'object' && !Array.isArray(d) && (Array.isArray(d.drops) || d.app === 'td2-drop-tracker'); }
 function parseDb(text){ try{ const d = JSON.parse(text); return isDbData(d) ? d : null; }catch(e){ return null; } }
 
-/* ---- Puente nativo ---- */
+/* ---- Android bridge ---- */
 function nCall(fn, ...a){ try{ return window.AndroidDB[fn](...a); }catch(e){ return null; } }
 function nJSON(fn, ...a){ const r = nCall(fn, ...a); try{ return r ? JSON.parse(r) : null; }catch(e){ return null; } }
 function nativeStatus(){ db = nJSON('status') || {hasFile:false, name:''}; }
 function loadCacheInto(){ const d = parseDb(nCall('loadCache') || ''); if (d) applyData(d); }
-function resetSelections(){
-  Object.assign(R, {core:null, minors:[], talent:null});
-  Object.assign(Q, blankSel(Q.cat));
-  catDirty = false; CW = null;
-}
 function nativeLoad(){
   nativeStatus();
   dbBlocked = false; dbError = '';
   if (!db.hasFile){ loadCacheInto(); return; }
-  const r = nJSON('load') || {ok:false, error:'error desconocido'};
+  const r = nJSON('load') || {ok:false, error:'unknown error'};
   if (!r.ok){
     dbBlocked = true;
-    dbError = 'No se pudo abrir ' + (db.name || 'el archivo de datos') + ' (¿lo moviste o lo borraste?). Estás viendo la copia interna de la app: elige el archivo de nuevo o crea uno nuevo.';
+    dbError = 'Couldn’t open ' + (db.name || 'your data file') + ' (was it moved or deleted?). You’re seeing the app’s internal copy: pick the file again or create a new one.';
     loadCacheInto(); return;
   }
   const text = r.text || '';
@@ -385,7 +520,7 @@ function nativeLoad(){
   const d = parseDb(text);
   if (!d){
     dbBlocked = true;
-    dbError = (db.name || 'El archivo') + ' no es una base de datos válida de Drops TD2, así que no se modificará. Estás viendo la copia interna de la app.';
+    dbError = (db.name || 'The file') + ' isn’t a valid Drops TD2 database, so it won’t be changed. You’re seeing the app’s internal copy.';
     loadCacheInto(); return;
   }
   applyData(d); lastText = text; nCall('saveCache', text);
@@ -397,14 +532,14 @@ window.__dbReady = function(mode){
   nativeStatus();
   if (mode === 'created'){
     dbBlocked = false; persist();
-    toast('Base de datos creada: ' + db.name);
+    toast('Database created: ' + db.name);
   } else {
     const r = nJSON('load');
     const text = r && r.ok ? (r.text || '') : null;
     const d = text && text.trim() ? parseDb(text) : null;
-    if (text === null){ alert('No se pudo leer ese archivo.'); nCall('revert'); nativeStatus(); }
-    else if (!text.trim()){ dbBlocked = false; persist(); toast('Archivo vacío: se guardaron ahí tus datos actuales'); }
-    else if (!d){ alert('Ese archivo no es una base de datos ni un respaldo de Drops TD2.'); nCall('revert'); nativeStatus(); }
+    if (text === null){ alert('Couldn’t read that file.'); nCall('revert'); nativeStatus(); }
+    else if (!text.trim()){ dbBlocked = false; persist(); toast('Empty file: your current data was saved to it'); }
+    else if (!d){ alert('That file isn’t a Drops TD2 database or backup.'); nCall('revert'); nativeStatus(); }
     else {
       if (applyData(d)) resetSelections();
       lastText = text; dbBlocked = false; storageOK = true; dbError = '';
@@ -414,7 +549,7 @@ window.__dbReady = function(mode){
         if (extra){ S.drops.sort((a, b) => a.ts - b.ts); persist(); }
         else nCall('saveCache', text);
       } else nCall('saveCache', text);
-      toast('Archivo abierto: ' + db.name + ' (' + fmtInt(S.drops.length) + ' drops)');
+      toast('Opened ' + db.name + ' (' + plural(S.drops.length, 'drop') + ')');
     }
   }
   updateChrome(); renderView();
@@ -425,13 +560,13 @@ window.__onResume = function(){
   if (!r || !r.ok){ nativeLoad(); updateChrome(); renderView(); return; }
   if (r.text && r.text.trim() && r.text !== lastText){
     const d = parseDb(r.text);
-    if (d){ if (applyData(d)) resetSelections(); lastText = r.text; nCall('saveCache', r.text); updateChrome(); renderView(); toast('Datos recargados: el archivo cambió fuera de la app'); }
+    if (d){ if (applyData(d)) resetSelections(); lastText = r.text; nCall('saveCache', r.text); updateChrome(); renderView(); toast('Reloaded: the file changed outside the app'); }
   }
 };
-window.__onBack = function(){ if (view !== 'reg'){ setView('reg'); return true; } return false; };
+window.__onBack = function(){ if (view !== 'log'){ setView('log'); return true; } return false; };
 window.__nativeImport = function(text){ importData(text); renderView(); };
 window.__nativeSaved = function(ok, msg){
-  if (ok && pendingBackup){ markBackup(); }
+  if (ok && pendingBackup) markBackup();
   pendingBackup = false;
   toast(msg);
   if (view === 'hist') renderHist();
@@ -439,14 +574,14 @@ window.__nativeSaved = function(ok, msg){
 function renderOnboard(){
   $('#onboard').replaceChildren(h('div', {class:'box'},
     h('div', {class:'logo'}, 'TD2'),
-    h('h1', {}, 'Elige dónde guardar tus drops'),
-    h('p', {}, 'Drops TD2 guarda todo en un archivo .json de tu teléfono. Crea uno nuevo (por ejemplo en Documentos) o abre uno que ya tengas, como un respaldo exportado desde la versión web.'),
-    h('button', {type:'button', class:'btn primary block', onclick: () => nativePick('create')}, 'Crear archivo nuevo'),
-    h('button', {type:'button', class:'btn block', onclick: () => nativePick('open')}, 'Abrir archivo existente'),
-    h('p', {class:'small', style:'margin-top:18px'}, 'La app no usa Internet. El archivo es tuyo: puedes copiarlo, respaldarlo o llevarlo a otro teléfono.')));
+    h('h1', {}, 'Choose where to save your drops'),
+    h('p', {}, 'Drops TD2 keeps everything in a .json file on your phone. Create a new one (for example in Documents) or open one you already have, like a backup.'),
+    h('button', {type:'button', class:'btn primary block', onclick: () => nativePick('create')}, 'Create new file'),
+    h('button', {type:'button', class:'btn block', onclick: () => nativePick('open')}, 'Open existing file'),
+    h('p', {class:'small', style:'margin-top:18px'}, 'The app never uses the internet. The file is yours: copy it, back it up or move it to another phone.')));
 }
 
-/* ---- Navegador ---- */
+/* ---- Browser ---- */
 function load(){
   try{
     localStorage.setItem(KEY + '-test', '1'); localStorage.removeItem(KEY + '-test');
@@ -461,81 +596,194 @@ function persist(){
     if (db.hasFile && !dbBlocked){
       const r = nCall('save', text);
       if (r === 'ok'){ storageOK = true; dbError = ''; lastText = text; }
-      else { storageOK = false; dbError = 'No se pudo guardar en ' + (db.name || 'el archivo') + ' (' + (r || 'error desconocido') + '). Tus cambios quedan en la copia interna de la app.'; }
+      else { storageOK = false; dbError = 'Couldn’t save to ' + (db.name || 'the file') + ' (' + (r || 'unknown error') + '). Your changes are kept in the app’s internal copy.'; }
     } else nCall('saveCache', text);
   } else {
-    try{ localStorage.setItem(KEY, JSON.stringify({v:2, drops:S.drops, catalog:S.catalog, backupTs:S.backupTs, settings:{useBase:S.useBase}})); storageOK = true; }
+    try{ localStorage.setItem(KEY, JSON.stringify({v:3, drops:S.drops, catalog:S.catalog, backupTs:S.backupTs, settings:{useBase:S.useBase}})); storageOK = true; }
     catch(e){ storageOK = false; }
   }
   updateChrome();
 }
 function updateChrome(){
-  const n = S.drops.length;
-  $('#count').textContent = fmtInt(n) + (n === 1 ? ' drop' : ' drops');
+  $('#count').textContent = plural(S.drops.length, 'drop');
   const b = $('#banner');
   if (NATIVE){
     $('#onboard').hidden = db.hasFile;
     if (!db.hasFile) renderOnboard();
     const show = db.hasFile && (dbBlocked || !storageOK);
     b.hidden = !show;
-    if (show) b.replaceChildren(h('div', {}, dbError || 'Hay un problema con el archivo de datos.'),
+    if (show) b.replaceChildren(h('div', {}, dbError || 'There’s a problem with the data file.'),
       h('div', {class:'acts'},
-        h('button', {type:'button', class:'btn', onclick: () => nativePick('open')}, 'Abrir archivo'),
-        h('button', {type:'button', class:'btn', onclick: () => nativePick('create')}, 'Crear archivo nuevo')));
+        h('button', {type:'button', class:'btn', onclick: () => nativePick('open')}, 'Open file'),
+        h('button', {type:'button', class:'btn', onclick: () => nativePick('create')}, 'Create new file')));
     return;
   }
   if (!storageOK){
     b.hidden = false;
-    b.textContent = 'Este navegador no está permitiendo guardar los datos al abrir el archivo de esta forma. Exporta un respaldo con frecuencia desde Historial para no perder tus drops.';
+    b.textContent = 'This browser isn’t letting the page save data. Export a backup often from History so you don’t lose your drops.';
   } else b.hidden = true;
 }
 
-/* ---------- Pools del catálogo ---------- */
+/* ================= Catalog helpers ================= */
 const C = () => S.catalog;
-function gearTalentPool(c, s){ if (c !== 'Brand' || !TALENT_PIECES.includes(s)) return []; return (C().gearTalents['Brand|' + s] || []).slice().sort(coll); }
-function wCfg(s){ return C().weapons[s] || {core1:'', core2:[]}; }
-function wMinorPool(s, core2){
-  const cfg = wCfg(s);
-  const c2 = core2 || (cfg.core2.length === 1 ? cfg.core2[0] : null);
-  return C().weaponMinors.filter(m => m !== c2);
+function setList(cat){ return (cat === 'gear' ? C().gearSets : C().brands).slice().sort(coll); }
+function namedOptions(sel){
+  if (sel.cat === 'brand' && sel.set && sel.slot) return C().namedGear.filter(x => x.set === sel.set && x.slot === sel.slot);
+  if (sel.cat === 'weapon' && sel.slot) return C().namedWeapons.filter(x => x.type === sel.slot).sort((a, b) => coll(a.n, b.n));
+  return [];
 }
-function wTalentPool(s){ return C().weaponTalents.filter(t => t.w.includes(s)).map(t => t.n).sort(coll); }
-function allWeaponTalents(){ return [...new Set(C().weaponTalents.filter(t => t.w.length).map(t => t.n))].sort(coll); }
+function findNamed(sel){ return sel.rarity === NAMED && sel.named ? namedOptions(sel).find(x => x.n === sel.named) || null : null; }
+function weaponTalentPool(type){ return C().weaponTalents.filter(t => t.w.includes(type)).map(t => t.n).sort(coll); }
 
-/* ---------- Componentes ---------- */
+/* What can roll on an item (after steps 1-3) */
+function itemInfo(sel){
+  const named = findNamed(sel);
+  if (sel.cat === 'weapon'){
+    const wc = WEAPON_CORE[sel.slot] || {core1: sel.slot + ' Damage', core2: null};
+    return {hasCore: false, core1: wc.core1, core2: wc.core2, attrSlots: 1,
+      attrPool: C().weaponAttrs.filter(a => a !== wc.core2),
+      talentPool: named ? [] : weaponTalentPool(sel.slot),
+      lockedTalent: named ? named.perk : null, lockedAttr: null, named};
+  }
+  const talentSlot = TALENT_SLOTS.includes(sel.slot);
+  const base = {hasCore: true, attrPool: C().gearAttrs.slice(), named, lockedAttr: null, lockedTalent: null, talentPool: []};
+  if (sel.cat === 'gear') return Object.assign(base, {attrSlots: 1, lockedTalent: talentSlot ? 'Gear Set talent (comes with the set)' : null});
+  if (named) return talentSlot ? Object.assign(base, {attrSlots: 2, lockedTalent: named.perk})
+                               : Object.assign(base, {attrSlots: 1, lockedAttr: named.perk});
+  return Object.assign(base, {attrSlots: 2, talentPool: talentSlot ? (sel.slot === 'Chest' ? C().chestTalents : C().backpackTalents).slice().sort(coll) : []});
+}
+const itemKey = s => [s.cat, s.set || '', s.slot || '', s.rarity || '', s.named || ''].join('|');
+function itemName(s){
+  if (s.cat === 'weapon') return s.rarity === NAMED && s.named ? s.named : 'High End ' + s.slot;
+  if (s.rarity === NAMED && s.named) return s.named;
+  return (s.set || 'Unknown ' + (s.cat === 'gear' ? 'Gear Set' : 'brand')) + ' ' + (s.slot || '');
+}
+function itemSub(s){
+  if (s.cat === 'weapon') return s.rarity === NAMED ? 'Named ' + s.slot : s.slot;
+  if (s.rarity === NAMED) return 'Named · ' + (s.set || '') + ' ' + (s.slot || '');
+  return CAT_LABEL[s.cat] + (s.cat === 'brand' ? ' · High End' : '');
+}
+
+/* ================= Shared steps 1-3 (type/set → slot → rarity) ================= */
+const SEL_ORDER = ['cat', 'set', 'slot', 'rarity', 'named'];
+const blankSel = () => ({cat:null, set:null, slot:null, rarity:null, named:null});
+function stepDone(sel, k){
+  if (k === 1) return !!sel.cat && (sel.cat === 'weapon' || !!sel.set);
+  if (k === 2) return stepDone(sel, 1) && !!sel.slot;
+  if (k === 3) return stepDone(sel, 2) && (sel.cat === 'gear' || sel.rarity === HE || (sel.rarity === NAMED && !!sel.named));
+  return false;
+}
+/* Picking a value resets everything after it. Returns true if the selection changed. */
+function applySel(sel, key, v){
+  if (sel[key] === v) return false;
+  sel[key] = v;
+  for (let j = SEL_ORDER.indexOf(key) + 1; j < SEL_ORDER.length; j++) sel[SEL_ORDER[j]] = null;
+  if (sel.cat === 'gear' && sel.slot) sel.rarity = GS;
+  if (sel.rarity === NAMED && !sel.named){ const o = namedOptions(sel); if (o.length === 1) sel.named = o[0].n; }
+  return true;
+}
 function chips(options, selected, onPick, cols){
   const wrap = h('div', {class: 'chips' + (cols ? ' cols-' + cols : '')});
   for (const o of options){
     const on = Array.isArray(selected) ? (o.any ? selected.length === 0 : selected.includes(o.v)) : selected === o.v;
     wrap.append(h('button', {type:'button', class:'chip' + (o.any ? ' any' : ''), 'aria-pressed': on ? 'true' : 'false',
-      disabled: o.disabled, onclick: () => onPick(o.v)}, dot(o.color), o.label));
+      disabled: o.disabled, onclick: () => onPick(o.v)}, dot(o.color), o.sub ? h('span', {}, o.label, h('small', {}, o.sub)) : o.label));
   }
   return wrap;
 }
 function seg(options, selected, onPick){
   const wrap = h('div', {class:'seg', role:'group'});
-  for (const o of options) wrap.append(h('button', {type:'button', 'aria-pressed': selected === o.v ? 'true' : 'false', onclick: () => onPick(o.v)}, o.label));
+  for (const o of options) wrap.append(h('button', {type:'button', 'aria-pressed': selected === o.v ? 'true' : 'false', disabled: o.disabled,
+    onclick: () => onPick(o.v)}, o.label));
   return wrap;
 }
 function field(label, control, hint){
   return h('div', {class:'field'}, h('div', {class:'lbl'}, h('span', {}, label), hint ? h('span', {class:'hint'}, hint) : null), control);
 }
-function selectBox(pool, value, onChange, emptyLabel){
+function selectBox(pool, value, onChange, emptyLabel, labelFn){
   const s = h('select', {onchange: e => onChange(e.target.value)});
   s.append(h('option', {value:''}, emptyLabel));
-  for (const t of pool) s.append(h('option', {value:t}, t));
+  for (const t of pool) s.append(h('option', {value:t}, labelFn ? labelFn(t) : t));
   s.value = pool.includes(value) ? value : '';
   return s;
 }
+const opt = (v, extra) => Object.assign({v, label: v, color: COLOR[v]}, extra || {});
+const anyOpt = {v: ANY, label: 'Any', any: true};
+function card(title, ...kids){ return h('div', {class:'card'}, title ? h('h2', {}, title) : null, ...kids); }
+function kv(k, v, small){ return h('div', {class:'kv'}, h('span', {class:'k'}, k), h('span', {class:'v'}, v, small ? h('small', {}, small) : null)); }
+function perkBox(title, text){ return h('div', {class:'perk'}, lockIcon(), h('div', {}, h('small', {}, title), h('b', {}, text))); }
 function toggleMulti(arr, v, lim){
   const i = arr.indexOf(v);
   if (i >= 0) arr.splice(i, 1); else arr.push(v);
   while (arr.length > lim) arr.shift();
 }
-const opt = (v, extra) => Object.assign({v, label: v, color: COLOR[v]}, extra || {});
-const anyOpt = {v: ANY, label: 'Cualquiera', any: true};
-function card(title, ...kids){ return h('div', {class:'card'}, title ? h('h2', {}, title) : null, ...kids); }
-function kv(k, v, small){ return h('div', {class:'kv'}, h('span', {class:'k'}, k), h('span', {class:'v'}, v, small ? h('small', {}, small) : null)); }
+function stepCard(n, title, state, summary, body, hint){
+  return h('section', {class:'step ' + state},
+    h('div', {class:'step-h'}, h('span', {class:'step-n'}, state === 'done' ? '✓' : String(n)), h('span', {class:'step-t'}, title),
+      summary ? h('span', {class:'step-s'}, summary) : null),
+    state === 'locked' ? h('div', {class:'locked-hint'}, hint) : body);
+}
+/* Renders steps 1-3 for a selection. onChange(key, value) is called with the picked value. */
+function itemSteps(sel, onChange){
+  const out = [];
+  const d1 = stepDone(sel, 1), d2 = stepDone(sel, 2), d3 = stepDone(sel, 3);
+  // Step 1: type (+ set)
+  const b1 = h('div', {}, seg(CATS.map(c => ({v:c, label:CAT_LABEL[c]})), sel.cat, v => onChange('cat', v)));
+  if (sel.cat === 'brand' || sel.cat === 'gear'){
+    b1.append(h('div', {class:'sub-lbl'}, sel.cat === 'gear' ? 'Which Gear Set?' : 'Which brand?'),
+      selectBox(setList(sel.cat), sel.set, v => onChange('set', v || null), sel.cat === 'gear' ? '— Choose the Gear Set —' : '— Choose the brand —'));
+  }
+  out.push(stepCard(1, sel.cat === 'weapon' ? 'Type' : 'Type & set', d1 ? 'done' : 'open', d1 ? (sel.set || CAT_LABEL[sel.cat]) : '', b1));
+  // Step 2: slot / weapon type
+  const slots = sel.cat === 'weapon' ? WEAPON_TYPES : GEAR_SLOTS;
+  const b2 = chips(slots.map(s => opt(s)), sel.slot, v => onChange('slot', v), sel.cat === 'weapon' ? 2 : 3);
+  out.push(stepCard(2, sel.cat === 'weapon' ? 'Weapon type' : 'Slot', !d1 ? 'locked' : d2 ? 'done' : 'open', d2 ? sel.slot : '', b2,
+    !sel.cat ? 'Choose the type first.' : 'Choose the ' + (sel.cat === 'gear' ? 'Gear Set' : 'brand') + ' first.'));
+  // Step 3: rarity
+  let b3;
+  if (sel.cat === 'gear') b3 = h('div', {class:'note'}, 'Gear Set pieces have a single rarity.');
+  else if (d2){
+    const named = namedOptions(sel);
+    b3 = h('div', {}, seg([{v:HE, label:'High End'}, {v:NAMED, label: named.length ? 'Named' : 'Named (none)', disabled: !named.length}],
+      sel.rarity, v => onChange('rarity', v)));
+    if (!named.length && sel.cat === 'brand') b3.append(h('div', {class:'small muted', style:'margin-top:8px'}, 'There’s no Named item for this brand and slot.'));
+    if (sel.rarity === NAMED){
+      if (named.length > 4){
+        b3.append(h('div', {class:'sub-lbl'}, 'Which Named ' + W_SHORT[sel.slot] + '?'),
+          selectBox(named.map(x => x.n), sel.named, v => onChange('named', v || null), '— Choose the Named item —',
+            n => { const x = named.find(y => y.n === n); return n + (x && x.base ? ' (' + x.base + ')' : '') + ' — ' + (x ? x.perk : ''); }));
+      } else {
+        b3.append(h('div', {class:'sub-lbl'}, named.length > 1 ? 'Which one?' : 'Named item'),
+          chips(named.map(x => ({v:x.n, label:x.n, sub:x.perk})), sel.named, v => onChange('named', v), 1));
+      }
+    }
+  }
+  const sum3 = !d3 ? '' : sel.cat === 'gear' ? GS : sel.rarity === NAMED ? sel.named : HE;
+  out.push(stepCard(3, 'Rarity', !d2 ? 'locked' : d3 ? 'done' : 'open', sum3, b3, 'Choose the ' + (sel.cat === 'weapon' ? 'weapon type' : 'slot') + ' first.'));
+  return out;
+}
+
+/* ================= Navigation ================= */
+let view = 'log';
+let catDirty = false;
+function setView(v){
+  if (view === 'cat' && v !== 'cat' && catDirty){
+    if (!confirm('You have unsaved Catalog changes. Discard them?')) return;
+    catDirty = false;
+  }
+  view = v;
+  document.querySelectorAll('.view').forEach(el => { el.hidden = el.dataset.view !== v; });
+  document.querySelectorAll('nav.tabs button').forEach(b => { if (b.dataset.go === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  renderView();
+  window.scrollTo(0, 0);
+}
+function renderView(){
+  if (view === 'log') renderLog();
+  else if (view === 'odds') renderOdds();
+  else if (view === 'hist') renderHist();
+  else if (view === 'cat') renderCatalog();
+}
+document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => setView(b.dataset.go)));
 
 let toastTimer;
 function toast(msg, actLabel, act){
@@ -547,565 +795,381 @@ function toast(msg, actLabel, act){
   toastTimer = setTimeout(() => { t.hidden = true; }, 5000);
 }
 
-/* ---------- Navegación ---------- */
-let view = 'reg';
-let catDirty = false;
-function setView(v){
-  if (view === 'cat' && v !== 'cat' && catDirty){
-    if (!confirm('Tienes cambios sin guardar en el catálogo. ¿Descartarlos?')) return;
-    catDirty = false;
-  }
-  view = v;
-  document.querySelectorAll('.view').forEach(el => { el.hidden = el.dataset.view !== v; });
-  document.querySelectorAll('nav.tabs button').forEach(b => { if (b.dataset.go === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
-  renderView();
-  window.scrollTo(0, 0);
-}
-function renderView(){
-  if (view === 'reg') renderReg();
-  else if (view === 'prob') renderProb();
-  else if (view === 'hist') renderHist();
-  else if (view === 'cat') renderCatalog();
-}
-document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => setView(b.dataset.go)));
+/* ================= 1) LOG DROP ================= */
+const R = {sel: blankSel(), core: null, attrs: [], talent: null, note: ''};
+function resetRoll(o, any){ o.core = any ? ANY : null; o.attrs = []; o.talent = any ? ANY : null; }
 
-/* =========================================================
-   1) REGISTRO
-   ========================================================= */
-const R = {cat:'Equipo', clase:null, sub:null, core:null, core2:null, minors:[], talent:null, note:''};
-
-function regLimit(){ return R.clase === 'Gear' ? 1 : 2; }
-function regMissing(){
-  const m = [];
-  if (R.cat === 'Equipo'){
-    if (!R.clase) m.push('clase');
-    if (!R.sub) m.push('pieza');
-    if (!R.core) m.push('core');
-    const lim = regLimit();
-    if (R.minors.length !== lim) m.push(lim === 2 ? '2 atributos menores' : 'atributo menor');
-    if (R.clase === 'Brand' && TALENT_PIECES.includes(R.sub) && gearTalentPool('Brand', R.sub).length && !R.talent) m.push('talento');
-  } else {
-    if (!R.sub) m.push('subtipo');
-    else {
-      if (wCfg(R.sub).core2.length > 1 && !R.core2) m.push('core 2');
-      if (wMinorPool(R.sub, R.core2).length && R.minors.length !== 1) m.push('atributo menor');
-      if (wTalentPool(R.sub).length && !R.talent) m.push('talento');
-    }
-  }
+function logMissing(){
+  if (!stepDone(R.sel, 1)) return [R.sel.cat ? (R.sel.cat === 'gear' ? 'Gear Set' : 'brand') : 'type'];
+  if (!stepDone(R.sel, 2)) return [R.sel.cat === 'weapon' ? 'weapon type' : 'slot'];
+  if (!stepDone(R.sel, 3)) return [R.sel.rarity === NAMED ? 'Named item' : 'rarity'];
+  const info = itemInfo(R.sel), m = [];
+  if (info.hasCore && !R.core) m.push('core attribute');
+  if (R.attrs.length !== info.attrSlots) m.push(info.attrSlots === 2 ? '2 attributes' : 'attribute');
+  if (info.talentPool.length && !R.talent) m.push('talent');
   return m;
 }
-function renderReg(){
-  const root = $('#reg');
-  root.replaceChildren();
-  const form = h('div', {class:'card'});
-  root.append(form);
-
-  form.append(field('Tipo', seg(TYPES.map(t => ({v:t, label:t})), R.cat, v => {
-    if (R.cat !== v) Object.assign(R, {cat:v, clase:null, sub:null, core:null, core2:null, minors:[], talent:null});
-    renderReg();
-  })));
-
-  if (R.cat === 'Equipo'){
-    form.append(field('Clase', seg(CLASSES.map(c => ({v:c, label:CLASS_LABEL[c]})), R.clase, v => {
-      R.clase = v;
-      while (R.minors.length > regLimit()) R.minors.shift();
-      if (R.talent && !gearTalentPool(v, R.sub).includes(R.talent)) R.talent = null;
-      renderReg();
-    })));
-    form.append(field('Pieza', chips(GEAR_PIECES.map(p => opt(p)), R.sub, v => {
-      R.sub = v;
-      if (R.talent && !gearTalentPool(R.clase, v).includes(R.talent)) R.talent = null;
-      renderReg();
-    }, 3)));
-    form.append(field('Atributo core', chips(C().gearCores.map(x => opt(x)), R.core, v => { R.core = v; renderReg(); }, 3)));
-    const lim = regLimit();
-    form.append(field(lim === 2 ? 'Atributos menores' : 'Atributo menor',
-      chips(C().gearMinors.map(x => opt(x)), R.minors, v => { toggleMulti(R.minors, v, lim); renderReg(); }, 2),
-      R.clase ? (R.minors.length + ' de ' + lim) : 'Brand: 2 · Gear Set: 1'));
-    if (R.sub && TALENT_PIECES.includes(R.sub)){
-      if (!R.clase) form.append(field('Talento', h('div', {class:'note'}, 'Elige la clase para ver los talentos.')));
-      else if (R.clase === 'Gear') form.append(field('Talento', h('div', {class:'note'}, 'Las piezas de Gear Set traen el talento propio del set.')));
-      else form.append(field('Talento',
-        selectBox(gearTalentPool('Brand', R.sub), R.talent, v => { R.talent = v || null; renderRegBar(); }, '— Elige un talento —')));
-    } else if (R.sub){
-      form.append(h('div', {class:'note'}, 'Esta pieza no tiene talento (solo Pechera, Mochila y armas).'));
-    }
+function rollFields(o, info, isOdds, rerender){
+  const out = [];
+  if (!info.hasCore){
+    out.push(field('Core attributes', h('div', {class:'fixed'},
+      h('div', {class:'fixed-row'}, h('span', {class:'k'}, 'Core 1'), h('span', {}, info.core1)),
+      h('div', {class:'fixed-row'}, h('span', {class:'k'}, 'Core 2'), h('span', {}, info.core2 || 'None on pistols'))), 'fixed for this weapon type'));
   } else {
-    form.append(field('Subtipo', chips(W_SUBS.map(s => opt(s)), R.sub, v => {
-      R.sub = v;
-      const cfg = wCfg(v);
-      R.core2 = cfg.core2.length === 1 ? cfg.core2[0] : null;
-      R.minors = R.minors.filter(m => wMinorPool(v, R.core2).includes(m));
-      if (R.talent && !wTalentPool(v).includes(R.talent)) R.talent = null;
-      renderReg();
-    }, 2)));
-    if (R.sub){
-      const cfg = wCfg(R.sub);
-      const fixedBox = h('div', {class:'fixed'},
-        h('div', {class:'fixed-row'}, h('span', {class:'k'}, 'Daño de arma'), h('span', {}, cfg.core1 || '—')),
-        cfg.core2.length <= 1 ? h('div', {class:'fixed-row'}, h('span', {class:'k'}, 'Secundario'), h('span', {}, cfg.core2[0] || 'Sin atributo secundario')) : null);
-      form.append(field('Atributos core', fixedBox, cfg.core2.length <= 1 ? 'Fijos para este tipo de arma' : null));
-      if (cfg.core2.length > 1){
-        form.append(field('Atributo secundario', chips(cfg.core2.map(x => opt(x)), R.core2, v => {
-          R.core2 = v; R.minors = R.minors.filter(m => m !== v); renderReg();
-        })));
-      }
-      const pool = wMinorPool(R.sub, R.core2);
-      if (pool.length) form.append(field('Atributo menor', chips(pool.map(x => opt(x)), R.minors, v => { toggleMulti(R.minors, v, 1); renderReg(); }, 2)));
-      const tp = wTalentPool(R.sub);
-      if (tp.length) form.append(field('Talento', selectBox(tp, R.talent, v => { R.talent = v || null; renderRegBar(); }, '— Elige un talento —')));
-    }
+    out.push(field('Core attribute', chips((isOdds ? [anyOpt] : []).concat(CORES.map(c => opt(c))), o.core, v => { o.core = v; rerender(); }, isOdds ? 2 : 3),
+      isOdds ? 'calculated separately' : null));
   }
-
-  const note = h('input', {type:'text', placeholder:'Opcional (actividad, nivel, etc.)', value:R.note, oninput: e => { R.note = e.target.value; }});
-  form.append(field('Nota', note));
-
-  const bar = h('div', {class:'actionbar', id:'regbar'});
-  root.append(bar);
-  renderRegBar();
+  if (info.lockedAttr) out.push(field('Unique attribute', perkBox('Always on this Named item', info.lockedAttr)));
+  const lim = info.attrSlots;
+  out.push(field(lim === 2 ? 'Attributes' : 'Attribute',
+    chips((isOdds ? [anyOpt] : []).concat(info.attrPool.map(a => opt(a))), o.attrs, v => {
+      if (v === ANY) o.attrs = []; else toggleMulti(o.attrs, v, lim);
+      rerender();
+    }, 2),
+    isOdds ? 'up to ' + lim : o.attrs.length + ' of ' + lim));
+  if (info.lockedTalent) out.push(field('Talent', perkBox(info.named ? 'Always on this Named item' : 'Fixed', info.lockedTalent)));
+  else if (info.talentPool.length) out.push(field('Talent', selectBox(info.talentPool, o.talent === ANY ? '' : o.talent,
+    v => { o.talent = v || (isOdds ? ANY : null); rerender(); }, isOdds ? 'Any' : '— Choose the talent —')));
+  else out.push(h('div', {class:'note'}, 'This slot has no talent.'));
+  return out;
 }
-function renderRegBar(){
-  const bar = $('#regbar'); if (!bar) return;
-  const miss = regMissing();
-  bar.replaceChildren(
-    h('button', {type:'button', class:'btn primary block', disabled: miss.length > 0, onclick: saveDrop}, 'Guardar drop'),
-    h('div', {class:'missing'}, miss.length ? 'Falta: ' + miss.join(', ') : 'Listo para guardar'));
+function renderLog(){
+  const root = $('#log');
+  root.replaceChildren();
+  root.append(...itemSteps(R.sel, (k, v) => { if (applySel(R.sel, k, v)) resetRoll(R); renderLog(); }));
+  const d3 = stepDone(R.sel, 3);
+  const body = h('div', {});
+  if (d3){
+    body.append(...rollFields(R, itemInfo(R.sel), false, renderLog));
+    body.append(field('Note', h('input', {type:'text', placeholder:'Optional (activity, difficulty…)', value:R.note, oninput: e => { R.note = e.target.value; }})));
+  }
+  root.append(stepCard(4, 'Attributes & talent', !d3 ? 'locked' : logMissing().length ? 'open' : 'done', '', body, 'Choose the rarity first.'));
+  const bar = h('div', {class:'actionbar', id:'logbar'});
+  root.append(bar);
+  const miss = logMissing();
+  bar.append(h('button', {type:'button', class:'btn primary block', disabled: miss.length > 0, onclick: saveDrop}, 'Save drop'),
+    h('div', {class:'missing'}, miss.length ? 'Missing: ' + miss.join(', ') : 'Ready to save'));
 }
 function saveDrop(){
-  if (regMissing().length) return;
-  const d = {id: uid(), ts: Date.now(), cat: R.cat, sub: R.sub, minors: R.minors.slice()};
-  if (R.cat === 'Equipo'){
-    d.clase = R.clase; d.core = R.core;
-    d.talent = R.clase === 'Brand' && TALENT_PIECES.includes(R.sub) ? (R.talent || null) : null;
-  } else {
-    d.core1 = wCfg(R.sub).core1; d.core2 = R.core2 || null; d.talent = R.talent || null;
-  }
+  if (logMissing().length) return;
+  const info = itemInfo(R.sel);
+  const d = {id: uid(), ts: Date.now(), cat: R.sel.cat, set: R.sel.set || null, slot: R.sel.slot,
+    rarity: R.sel.cat === 'gear' ? GS : R.sel.rarity, named: R.sel.rarity === NAMED ? R.sel.named : null,
+    core: info.hasCore ? R.core : null, attrs: R.attrs.slice(), talent: info.talentPool.length ? R.talent : null};
   if (R.note.trim()) d.note = R.note.trim();
   S.drops.push(d);
   persist();
-  R.core = null; R.minors = []; R.talent = null; R.note = '';
-  renderReg();
-  toast('Drop guardado', 'Deshacer', () => {
+  resetRoll(R); R.note = '';     // keep the item (steps 1-3) to log the next one quickly
+  renderLog();
+  toast('Drop saved', 'Undo', () => {
     S.drops = S.drops.filter(x => x.id !== d.id);
-    persist(); renderView(); toast('Drop eliminado');
+    persist(); renderView(); toast('Drop removed');
   });
 }
 
-/* =========================================================
-   2) PROBABILIDAD
-   ========================================================= */
-const Q = {cat:'Equipo', clase:ANY, sub:ANY, core:ANY, core2:ANY, minors:[], talent:ANY};
-let nextM = 100;
-const blankSel = cat => ({cat, clase:ANY, sub:ANY, core:ANY, core2:ANY, minors:[], talent:ANY});
-
-function inc(o, k){ if (k == null) return; o[k] = (o[k] || 0) + 1; }
-/* En equipo, cada atributo core es un grupo aparte: clase, pieza, menores y talento se cuentan por core */
-const newGroup = () => ({n:0, gClase:{}, gPiece:{}, gMinor:{}, gTal:{}});
-const EMPTY_GROUP = newGroup();
-function buildStats(drops){
-  const st = {n:0, type:{}, gCore:{}, gByCore:{}, wSub:{}, wCore2:{}, wMinor:{}, wTal:{}};
-  for (const d of drops){
-    st.n++; inc(st.type, d.cat);
-    if (d.cat === 'Equipo'){
-      inc(st.gCore, d.core);
-      const g = st.gByCore[d.core] = st.gByCore[d.core] || newGroup();
-      g.n++; inc(g.gClase, d.clase); inc(g.gPiece, d.sub);
-      (d.minors || []).forEach(m => inc(g.gMinor, m));
-      if (d.talent){ const k = d.clase + '|' + d.sub; g.gTal[k] = g.gTal[k] || {}; inc(g.gTal[k], d.talent); }
-    } else if (d.cat === 'Arma'){
-      inc(st.wSub, d.sub);
-      st.wCore2[d.sub] = st.wCore2[d.sub] || {}; inc(st.wCore2[d.sub], d.core2);
-      (d.minors || []).forEach(m => inc(st.wMinor, m));
-      inc(st.wTal, d.talent);
-    }
+/* ================= 2) ODDS ================= */
+/* The odds are conditional: given that this exact item dropped, how likely is the roll you want?
+   Each part is estimated in layers, from the narrowest group of drops to the widest:
+     p(level) = (times seen in this level + K · p(wider level)) / (drops in this level + K),  K = number of options
+   and the widest level falls back to equal odds (1 / K). With no data, this is the theoretical value.
+   Each drop counts only once: a level holds the drops of its group that aren't already in a narrower level. */
+function hier(v, pool, levels){
+  if (!pool.includes(v)) return 0;
+  const K = pool.length;
+  let p = 1 / K;
+  for (let i = levels.length - 1; i >= 0; i--){
+    const c = levels[i] || {};
+    let n = 0; for (const x of pool) n += c[x] || 0;
+    p = ((c[v] || 0) + K * p) / (n + K);
   }
-  return st;
+  return p;
 }
-const EMPTY = buildStats([]);
-/* Estimación suavizada (Laplace): (veces + 1) / (total del grupo + nº de opciones) */
-function sp(v, counts, pool){
-  if (!pool.length || !pool.includes(v)) return 0;
-  let n = 0; for (const x of pool) n += (counts && counts[x]) || 0;
-  return (((counts && counts[v]) || 0) + 1) / (n + pool.length);
-}
-function minorDist(g){ const pool = C().gearMinors, m = {}; for (const v of pool) m[v] = sp(v, g.gMinor, pool); return m; }
-/* Brand: dos atributos distintos, extraídos sin repetición */
-function minorsProb(c, minors, dist){
-  if (!minors.length) return 1;
-  if (c === 'Gear') return minors.length === 1 ? (dist[minors[0]] || 0) : 0;
-  const pool = Object.keys(dist);
-  if (minors.length === 1){
-    const a = minors[0], pa = dist[a] || 0; if (!pa) return 0;
+function distOf(pool, levels){ const m = {}; for (const v of pool) m[v] = hier(v, pool, levels); return m; }
+function countsOf(drops, getter){ const m = {}; for (const d of drops){ const v = getter(d); if (Array.isArray(v)) v.forEach(x => inc(m, x)); else inc(m, v); } return m; }
+/* Chance that an item with `slots` attribute slots (distinct, drawn without repeats) has all `want` attributes */
+function attrsProb(slots, want, d){
+  if (!want.length) return 1;
+  if (want.some(a => !(a in d))) return 0;
+  if (slots === 1) return want.length === 1 ? d[want[0]] : 0;
+  const pool = Object.keys(d);
+  if (want.length === 1){
+    const a = want[0], pa = d[a];
     let s = pa;
-    for (const b of pool){ if (b === a) continue; const pb = dist[b]; if (pb < 1) s += pb * pa / (1 - pb); }
+    for (const b of pool){ if (b === a) continue; const pb = d[b]; if (pb < 1) s += pb * pa / (1 - pb); }
     return Math.min(1, s);
   }
-  const [a, b] = minors, pa = dist[a] || 0, pb = dist[b] || 0;
-  if (!pa || !pb || a === b) return 0;
-  return (pa < 1 ? pa * pb / (1 - pa) : 0) + (pb < 1 ? pb * pa / (1 - pb) : 0);
-}
-function prob(sel, st){
-  if (sel.cat === 'Equipo'){
-    const pType = sp('Equipo', st.type, TYPES);
-    const corePool = C().gearCores;
-    const cores = sel.core === ANY ? corePool : [sel.core];
-    const classes = sel.clase === ANY ? CLASSES : [sel.clase];
-    const pieces = sel.sub === ANY ? GEAR_PIECES : [sel.sub];
-    let t = 0;
-    for (const core of cores){
-      const pk = sp(core, st.gCore, corePool);
-      if (!pk) continue;
-      const g = st.gByCore[core] || EMPTY_GROUP;   // solo los drops con este core
-      const dist = minorDist(g);
-      for (const c of classes){
-        const pc = sp(c, g.gClase, CLASSES);
-        const pm = minorsProb(c, sel.minors, dist);
-        if (!pm) continue;
-        let pp = 0;
-        for (const s of pieces){
-          const ps = sp(s, g.gPiece, GEAR_PIECES);
-          let pt = 1;
-          if (sel.talent !== ANY) pt = c === 'Brand' ? sp(sel.talent, g.gTal['Brand|' + s], gearTalentPool('Brand', s)) : 0;
-          pp += ps * pt;
-        }
-        t += pk * pc * pp * pm;
-      }
-    }
-    return pType * t;
+  if (want.length === 2){
+    const [a, b] = want; if (a === b) return 0;
+    const pa = d[a], pb = d[b];
+    return (pa < 1 ? pa * pb / (1 - pa) : 0) + (pb < 1 ? pb * pa / (1 - pb) : 0);
   }
-  const pType = sp('Arma', st.type, TYPES);
-  const subs = sel.sub === ANY ? W_SUBS : [sel.sub];
-  let t = 0;
-  for (const s of subs){
-    const cfg = wCfg(s);
-    const ps = sp(s, st.wSub, W_SUBS);
-    let pc2 = 1;
-    if (sel.core2 !== ANY){
-      if (!cfg.core2.length) pc2 = 0;
-      else if (cfg.core2.length === 1) pc2 = cfg.core2[0] === sel.core2 ? 1 : 0;
-      else pc2 = sp(sel.core2, st.wCore2[s], cfg.core2);
-    }
-    let pm = 1;
-    if (sel.minors.length) pm = sp(sel.minors[0], st.wMinor, wMinorPool(s, sel.core2 !== ANY && cfg.core2.length > 1 ? sel.core2 : null));
-    const pt = sel.talent === ANY ? 1 : sp(sel.talent, st.wTal, wTalentPool(s));
-    t += ps * pc2 * pm * pt;
-  }
-  return pType * t;
+  return 0;
 }
-function matches(d, sel){
-  if (d.cat !== sel.cat) return false;
-  if (sel.clase !== ANY && d.clase !== sel.clase) return false;
-  if (sel.sub !== ANY && d.sub !== sel.sub) return false;
-  if (sel.core !== ANY && d.core !== sel.core) return false;
-  if (sel.core2 !== ANY && d.core2 !== sel.core2) return false;
-  for (const m of sel.minors) if (!(d.minors || []).includes(m)) return false;
-  if (sel.talent !== ANY && d.talent !== sel.talent) return false;
+/* Levels of data used for each part, narrowest first. Groups are nested; each level keeps only the
+   drops that aren't in the narrower one, so no drop is counted twice. */
+function rings(D, preds, getter){
+  return preds.map((P, i) => countsOf(D.filter(d => P(d) && !(i && preds[i - 1](d))), getter));
+}
+function coreLevels(sel, D){
+  const k = itemKey(sel);
+  return rings(D, [d => itemKey(d) === k,
+                   d => d.cat === sel.cat && d.set === sel.set,
+                   d => d.cat === sel.cat,
+                   d => d.cat !== 'weapon'], d => d.core);
+}
+function gearAttrLevels(sel, core, D){
+  const k = itemKey(sel);
+  return rings(D, [d => d.core === core && itemKey(d) === k,
+                   d => d.core === core && d.cat === sel.cat,
+                   d => d.core === core && d.cat !== 'weapon',
+                   d => d.cat !== 'weapon'], d => d.attrs);
+}
+function gearTalentLevels(sel, core, D){
+  const k = itemKey(sel), b = d => d.cat === 'brand' && d.rarity === HE && d.slot === sel.slot && !!d.talent;
+  return rings(D, [d => b(d) && d.core === core && itemKey(d) === k,
+                   d => b(d) && d.core === core,
+                   b], d => d.talent);
+}
+function weaponAttrLevels(sel, D){
+  const k = itemKey(sel);
+  return rings(D, [d => itemKey(d) === k, d => d.cat === 'weapon' && d.slot === sel.slot, d => d.cat === 'weapon'], d => d.attrs);
+}
+function weaponTalentLevels(sel, D){
+  const k = itemKey(sel), w = d => d.cat === 'weapon' && d.rarity === HE && !!d.talent;
+  return rings(D, [d => w(d) && itemKey(d) === k, w], d => d.talent);
+}
+/* Main calculation. Returns {p, parts:[{core, pc, pa, pt, p}]} (one part per core; weapons have a single part) */
+function odds(sel, want, D){
+  const info = itemInfo(sel);
+  if (!info.hasCore){
+    const pa = attrsProb(1, want.attrs, distOf(info.attrPool, weaponAttrLevels(sel, D)));
+    const pt = want.talent === ANY || !info.talentPool.length ? 1 : hier(want.talent, info.talentPool, weaponTalentLevels(sel, D));
+    return {p: pa * pt, parts: [{core: null, pc: 1, pa, pt, p: pa * pt}]};
+  }
+  const cores = want.core === ANY ? CORES : [want.core];
+  const parts = cores.map(core => {
+    const pc = hier(core, CORES, coreLevels(sel, D));
+    const pa = attrsProb(info.attrSlots, want.attrs, distOf(info.attrPool, gearAttrLevels(sel, core, D)));
+    const pt = want.talent === ANY || !info.talentPool.length ? 1 : hier(want.talent, info.talentPool, gearTalentLevels(sel, core, D));
+    return {core, pc, pa, pt, p: pc * pa * pt};
+  });
+  return {p: parts.reduce((a, x) => a + x.p, 0), parts};
+}
+function matchesRoll(d, want){
+  if (want.core !== ANY && d.core !== want.core) return false;
+  for (const a of want.attrs) if (!(d.attrs || []).includes(a)) return false;
+  if (want.talent !== ANY && d.talent !== want.talent) return false;
   return true;
 }
-function levels(sel){
-  const keys = sel.cat === 'Equipo' ? ['core','clase','sub','minors','talent'] : ['sub','core2','minors','talent'];
-  let cur = blankSel(sel.cat);
-  const out = [{key:'cat', sel:cur}];
-  for (const k of keys){
-    const isAny = k === 'minors' ? !sel.minors.length : sel[k] === ANY;
-    if (isAny) continue;
-    cur = Object.assign({}, cur, {[k]: k === 'minors' ? sel.minors.slice() : sel[k]});
-    out.push({key:k, sel:cur});
-  }
-  return out;
-}
-function levelLabel(k, sel){
-  switch (k){
-    case 'cat': return ['Tipo', sel.cat];
-    case 'clase': return ['Clase', CLASS_LABEL[sel.clase]];
-    case 'sub': return [sel.cat === 'Equipo' ? 'Pieza' : 'Subtipo', sel.sub];
-    case 'core': return ['Core', sel.core];
-    case 'core2': return ['Core 2', sel.core2];
-    case 'minors': return [sel.minors.length > 1 ? 'Menores' : 'Menor', sel.minors.join(' + ')];
-    case 'talent': return ['Talento', sel.talent];
-  }
-  return [k, ''];
-}
 
-function renderProb(){ renderProbForm(); renderResults(); }
-function qLimit(){ return Q.clase === 'Gear' ? 1 : 2; }
-function renderProbForm(){
-  const f = $('#prob-form');
+const Q = {sel: blankSel(), core: ANY, attrs: [], talent: ANY};
+let nextM = 20;
+function resetSelections(){
+  R.sel = blankSel(); resetRoll(R); Q.sel = blankSel(); resetRoll(Q, true);
+  catDirty = false; CW = null;
+}
+function renderOdds(){ renderOddsForm(); renderOddsResults(); }
+function renderOddsForm(){
+  const f = $('#odds-form');
   f.replaceChildren();
-  const rerender = () => { renderProbForm(); renderResults(); };
-  if (BASE) f.append(h('label', {class:'basetoggle'},
-    h('input', {type:'checkbox', checked: S.useBase, onchange: e => { S.useBase = e.target.checked; persist(); renderResults(); }}),
-    h('span', {}, h('b', {}, 'Incluir datos base'), h('small', {}, BASE.label + ' · ' + fmtInt(BASE.drops.length) + ' drops que vienen con la app'))));
-  f.append(field('Tipo', seg(TYPES.map(t => ({v:t, label:t})), Q.cat, v => {
-    if (Q.cat !== v) Object.assign(Q, blankSel(v));
-    rerender();
-  })));
-
-  if (Q.cat === 'Equipo'){
-    f.append(field('Atributo core', chips([anyOpt].concat(C().gearCores.map(x => opt(x))), Q.core, v => { Q.core = v; rerender(); }, 2),
-      'se calcula por separado'));
-    f.append(field('Clase', chips([anyOpt].concat(CLASSES.map(c => ({v:c, label:CLASS_LABEL[c]}))), Q.clase, v => {
-      Q.clase = v;
-      while (Q.minors.length > qLimit()) Q.minors.shift();
-      if (Q.talent !== ANY && !talentPoolQ().includes(Q.talent)) Q.talent = ANY;
-      rerender();
-    }, 3)));
-    f.append(field('Pieza', chips([anyOpt].concat(GEAR_PIECES.map(p => opt(p))), Q.sub, v => {
-      Q.sub = v;
-      if (Q.talent !== ANY && !talentPoolQ().includes(Q.talent)) Q.talent = ANY;
-      rerender();
-    }, 3)));
-    const lim = qLimit();
-    f.append(field(lim === 2 ? 'Atributos menores' : 'Atributo menor',
-      chips([anyOpt].concat(C().gearMinors.map(x => opt(x))), Q.minors, v => {
-        if (v === ANY) Q.minors = []; else toggleMulti(Q.minors, v, lim);
-        rerender();
-      }, 2),
-      'hasta ' + lim));
-    if (TALENT_PIECES.includes(Q.sub)){
-      if (Q.clase === 'Gear') f.append(field('Talento', h('div', {class:'note'}, 'Las piezas de Gear Set traen el talento propio del set, así que no se filtra por talento.')));
-      else f.append(field('Talento', selectBox(talentPoolQ(), Q.talent, v => { Q.talent = v || ANY; renderResults(); }, 'Cualquiera'),
-        Q.clase === ANY ? 'solo Brand' : null));
-    } else {
-      f.append(h('div', {class:'note'}, Q.sub === ANY ? 'Elige Pechera o Mochila para filtrar por talento.' : 'Esta pieza no tiene talento.'));
-    }
-  } else {
-    f.append(field('Subtipo', chips([anyOpt].concat(W_SUBS.map(s => opt(s))), Q.sub, v => {
-      Q.sub = v; Q.core2 = ANY;
-      Q.minors = Q.minors.filter(m => minorPoolQ().includes(m));
-      if (Q.talent !== ANY && !talentPoolQ().includes(Q.talent)) Q.talent = ANY;
-      rerender();
-    }, 2)));
-    if (Q.sub !== ANY){
-      const cfg = wCfg(Q.sub);
-      if (cfg.core2.length > 1){
-        f.append(field('Atributo secundario', chips([anyOpt].concat(cfg.core2.map(x => opt(x))), Q.core2, v => { Q.core2 = v; rerender(); }, 2)));
-      } else {
-        f.append(h('div', {class:'note'}, 'Core fijos: ' + [cfg.core1, cfg.core2[0]].filter(Boolean).join(' · ')));
-      }
-    }
-    const mp = minorPoolQ();
-    if (mp.length) f.append(field('Atributo menor', chips([anyOpt].concat(mp.map(x => opt(x))), Q.minors, v => {
-      if (v === ANY) Q.minors = []; else toggleMulti(Q.minors, v, 1);
-      rerender();
-    }, 2)));
-    f.append(field('Talento', selectBox(talentPoolQ(), Q.talent, v => { Q.talent = v || ANY; renderResults(); }, 'Cualquiera')));
-  }
+  const rerender = () => { renderOddsForm(); renderOddsResults(); };
+  f.append(...itemSteps(Q.sel, (k, v) => { if (applySel(Q.sel, k, v)) resetRoll(Q, true); rerender(); }));
+  const d3 = stepDone(Q.sel, 3);
+  const body = h('div', {});
+  if (d3) body.append(...rollFields(Q, itemInfo(Q.sel), true, rerender));
+  if (BASE) body.append(h('label', {class:'basetoggle'},
+    h('input', {type:'checkbox', checked: S.useBase, onchange: e => { S.useBase = e.target.checked; persist(); renderOddsResults(); }}),
+    h('span', {}, h('b', {}, 'Include base data'), h('small', {}, BASE.label + ' · ' + plural(BASE.drops.length, 'drop') + ' bundled with the app'))));
+  f.append(stepCard(4, 'Roll you want', !d3 ? 'locked' : 'open', '', body, 'Choose the rarity first.'));
 }
-function talentPoolQ(){
-  if (Q.cat === 'Equipo'){
-    if (!TALENT_PIECES.includes(Q.sub) || Q.clase === 'Gear') return [];
-    return gearTalentPool('Brand', Q.sub);
-  }
-  return Q.sub === ANY ? allWeaponTalents() : wTalentPool(Q.sub);
-}
-function minorPoolQ(){
-  if (Q.sub === ANY) return C().weaponMinors.slice();
-  return wMinorPool(Q.sub, Q.core2 !== ANY ? Q.core2 : null);
-}
-function describeBase(){
-  if (Q.cat === 'Equipo'){
-    const p = Q.sub === ANY ? 'pieza de equipo' : Q.sub;
-    return p + (Q.clase === ANY ? '' : ' ' + CLASS_LABEL[Q.clase]);
-  }
-  return Q.sub === ANY ? 'arma' : Q.sub;
-}
-function renderResults(){
-  const box = $('#prob-results');
+function renderOddsResults(){
+  const box = $('#odds-results');
   box.replaceChildren();
-  const own = S.drops, all = estDrops();
-  const N = own.length, NA = all.length, NB = NA - N;   // tuyos, total usado, de la base
-  const st = buildStats(all);
-  const lv = levels(Q);
-  let pd0 = 1, pt0 = 1, c0 = NA;
-  const rows = [];
-  for (const l of lv){
-    const pd = prob(l.sel, st), pt = prob(l.sel, EMPTY);
-    const c = all.filter(d => matches(d, l.sel)).length;
-    rows.push({key:l.key, sel:l.sel, fd: pd0 > 0 ? pd / pd0 : 0, ft: pt0 > 0 ? pt / pt0 : 0, c, n:c0});
-    pd0 = pd; pt0 = pt; c0 = c;
+  if (!stepDone(Q.sel, 3)){ box.append(card(null, h('p', {class:'muted', style:'margin:0'}, 'Pick an item in steps 1–3 to see its odds.'))); return; }
+  const want = {core: Q.core, attrs: Q.attrs.slice(), talent: Q.talent};
+  if (want.core === ANY && !want.attrs.length && want.talent === ANY){
+    box.append(card(null, h('p', {class:'muted', style:'margin:0'}, 'Choose the core attribute, attributes or talent you want in step 4.'))); return;
   }
-  const p = pd0, pT = pt0;
-  const k = own.filter(d => matches(d, Q)).length;   // veces que TÚ lo conseguiste
-  if (!(p > 0)){
-    const why = 'Esa combinación no puede salir con el catálogo actual.';
-    box.append(card('Resultado', h('p', {class:'muted'}, why)));
-    return;
-  }
-  // "Si ya cayó": probabilidad de los atributos pedidos dado que ya salió esa pieza/arma
-  const base = Object.assign(blankSel(Q.cat), {clase: Q.clase, sub: Q.sub});
-  const hasRoll = Q.core !== ANY || Q.core2 !== ANY || Q.minors.length > 0 || Q.talent !== ANY;
-  const pb = prob(base, st), pbT = prob(base, EMPTY);
-  const qRoll = pb > 0 ? p / pb : 0, tRoll = pbT > 0 ? pT / pbT : 0;
-  const coreSel = Q.cat === 'Equipo' && Q.core !== ANY;
-  const nCore = coreSel ? (st.gCore[Q.core] || 0) : 0;
-  const nRef = coreSel ? nCore : NA;
+  const sel = Q.sel, info = itemInfo(sel), k = itemKey(sel);
+  const own = S.drops, all = estDrops(), NB = all.length - own.length;
+  const r = odds(sel, want, all), rT = odds(sel, want, []);
+  const p = r.p, pT = rT.p;
+  if (!(p > 0)){ box.append(card('Result', h('p', {class:'muted', style:'margin:0'}, 'That roll can’t drop on this item.'))); return; }
+  const allItem = all.filter(d => itemKey(d) === k), ownItem = own.filter(d => itemKey(d) === k);
+  const ownHits = ownItem.filter(d => matchesRoll(d, want)).length;
+  const name = itemName(sel);
 
-  // Resultado principal
-  const main = card('Probabilidad por drop',
+  // Main result
+  const main = card('Chance once it drops',
     h('div', {class:'big'}, fmtPct(p)),
-    h('div', {class:'sub'}, oneIn(p)),
+    h('div', {class:'sub'}, '≈ 1 in ' + fmtInt(1 / p) + ' ' + name + ' drops'),
     h('div', {class:'small muted', style:'margin-top:8px'},
-      !NA ? 'Aún no tienes drops: se asume que todas las opciones son igual de probables.'
-      : coreSel ? 'Core ' + Q.core + ': clase, pieza, atributos menores y talento se calculan solo con los ' + fmtInt(nCore) + ' drops de equipo con ese core.'
-      : Q.cat === 'Equipo' ? 'Suma de los tres cores, cada uno calculado aparte (detalle abajo). Total de drops usados: ' + fmtInt(NA) + '.'
-      : 'Estimado con tus ' + fmtInt(N) + ' drops registrados (todas las categorías).'));
-  if (hasRoll){
-    main.append(h('div', {style:'margin-top:10px'},
-      kv('Si ya cayó: ' + describeBase(), fmtPct(qRoll), 'teórico: ' + fmtPct(tRoll))));
-  }
+      'If you get a ' + name + ', this is how likely it is to roll what you picked. Based on ' + plural(allItem.length, 'drop') + ' of this item' +
+      (info.hasCore ? ' plus similar gear' : ' plus similar weapons') + (NB ? ' (yours + base data).' : '.')),
+    kv('Theoretical (all options equally likely)', fmtPct(pT)));
   if (NB) main.append(h('div', {class:'small muted', style:'margin-top:6px'},
-    'Incluye ' + fmtInt(NB) + ' drops de los datos base (' + BASE.label + ') además de tus ' + fmtInt(N) + '.'));
-  if (NA > 0 && nRef < 30) main.append(h('div', {class:'small warn', style:'margin-top:8px'}, 'Con pocos drops la estimación se apoya sobre todo en el supuesto teórico. Mejora a medida que registras más.'));
+    'Includes ' + plural(NB, 'drop') + ' from the base data (' + BASE.label + ') along with your ' + fmtInt(own.length) + '.'));
+  if (allItem.length < 10) main.append(h('div', {class:'small warn', style:'margin-top:8px'},
+    'Few drops of this exact item yet, so the estimate leans on similar items and the theoretical odds. It sharpens as you log more.'));
   box.append(main);
 
-  // Un resultado por cada atributo core (equipo)
-  if (Q.cat === 'Equipo'){
+  // One result per core attribute
+  if (info.hasCore){
     const list = h('div', {class:'corelist'});
-    for (const core of C().gearCores){
-      const s2 = Object.assign({}, Q, {core, minors: Q.minors.slice()});
-      const pc = prob(s2, st);
-      const kc = own.filter(d => matches(d, s2)).length;
+    for (const core of CORES){
+      const rc = odds(sel, Object.assign({}, want, {core}), all), part = rc.parts[0];
+      const youN = ownItem.filter(d => d.core === core).length;
+      const youK = ownItem.filter(d => matchesRoll(d, Object.assign({}, want, {core}))).length;
       const on = Q.core === core;
       list.append(h('button', {type:'button', class:'corerow', 'aria-pressed': on ? 'true' : 'false',
-        onclick: () => { Q.core = on ? ANY : core; renderProb(); }},
-        h('span', {class:'cr-name'}, dot(COLOR[core]), core),
-        h('span', {class:'cr-p'}, fmtPct(pc), h('small', {}, pc > 0 ? '1 de cada ' + fmtInt(1 / pc) : '—')),
-        h('span', {class:'cr-k'}, fmtInt(kc), h('small', {}, 'de ' + fmtInt(own.filter(d => d.cat === 'Equipo' && d.core === core).length)))));
+        onclick: () => { Q.core = on ? ANY : core; renderOdds(); }},
+        h('span', {class:'cr-name'}, dot(COLOR[core]), h('span', {}, core, h('small', {}, 'core ' + fmtPct(part.pc) + ' × roll ' + fmtPct(part.pa * part.pt)))),
+        h('span', {class:'cr-p'}, fmtPct(rc.p), h('small', {}, 'you: ' + fmtInt(youK) + ' of ' + fmtInt(youN)))));
     }
-    box.append(card('Por atributo core',
-      h('div', {class:'corehead'}, h('span', {}, 'Core'), h('span', {}, 'Por drop'), h('span', {}, 'Conseguido')),
-      list,
-      h('p', {class:'small muted', style:'margin:10px 0 0'}, 'Cada core se calcula aparte, con sus propios drops. "Conseguido": veces que te salió esta combinación / tus drops de equipo con ese core. Toca un core para ver su detalle' + (Q.core !== ANY ? ' (tócalo de nuevo para volver a "Cualquiera").' : '.'))));
+    box.append(card('By core attribute', list,
+      h('p', {class:'small muted', style:'margin:10px 0 0'}, 'Each core is calculated separately: its attributes and talent use only drops with that core. "You": times you got this roll with that core / your drops of this item with that core. Tap a core to see its breakdown' + (Q.core !== ANY ? ' (tap again for Any).' : '.'))));
   }
 
-  // Con tus drops actuales
-  const atLeast = 1 - Math.pow(1 - p, N);
-  box.append(card('Con tus drops actuales',
-    kv('Veces que ya lo conseguiste', fmtInt(k), N ? 'de ' + fmtInt(N) + ' drops (' + fmtPct(k / N) + ')' : null),
-    kv('Esperado con ' + fmtInt(N) + ' drops', fmtNum(N * p, 2) + ' veces'),
-    kv('Prob. de haberlo conseguido al menos 1 vez', fmtPct(atLeast))));
+  // Your drops of this item
+  const atLeast = 1 - Math.pow(1 - p, ownItem.length);
+  box.append(card('Your drops of this item',
+    kv('Drops of this item', fmtInt(ownItem.length)),
+    kv('With this roll', fmtInt(ownHits), ownItem.length ? fmtPct(ownHits / ownItem.length) + ' of them' : null),
+    kv('Expected with ' + plural(ownItem.length, 'drop'), fmtNum(ownItem.length * p, 2) + ' times'),
+    kv('Chance of having it by now', fmtPct(atLeast))));
 
-  // Proyección
+  // How many more
   const out = h('span', {class:'v'});
   const upd = () => { const m = Math.max(0, Math.floor(nextM || 0)); out.textContent = fmtPct(1 - Math.pow(1 - p, m)); };
   const inp = h('input', {type:'number', inputmode:'numeric', min:'1', value:String(nextM), oninput: e => { nextM = parseInt(e.target.value, 10) || 0; upd(); }});
   upd();
-  box.append(card('¿Cuántos drops más?',
-    kv('Para 50 % de probabilidad', fmtInt(needed(p, .5)) + ' drops'),
-    kv('Para 90 % de probabilidad', fmtInt(needed(p, .9)) + ' drops'),
-    kv('Promedio esperado', fmtInt(1 / p) + ' drops'),
-    h('div', {class:'kv'}, h('span', {class:'k inline'}, 'En los próximos', inp, 'drops'), out)));
+  box.append(card('How many more of this item?',
+    kv('For a 50% chance', plural(needed(p, .5), 'drop')),
+    kv('For a 90% chance', plural(needed(p, .9), 'drop')),
+    kv('On average', plural(1 / p, 'drop')),
+    h('div', {class:'kv'}, h('span', {class:'k inline'}, 'In the next', inp, 'drops'), out)));
 
-  // Desglose
+  // Breakdown
   const tb = h('tbody');
-  for (const r of rows){
-    const [k1, v1] = levelLabel(r.key, r.sel);
-    tb.append(h('tr', {},
-      h('td', {}, h('b', {}, k1), h('small', {}, v1)),
-      h('td', {class:'num'}, fmtPct(r.fd), h('small', {}, fmtInt(r.c) + ' / ' + fmtInt(r.n))),
-      h('td', {class:'num'}, fmtPct(r.ft))));
+  const row = (label, val, pd, pt, seenK, seenN) => tb.append(h('tr', {},
+    h('td', {}, h('b', {}, label), h('small', {}, val)),
+    h('td', {class:'num'}, fmtPct(pd), seenN != null ? h('small', {}, fmtInt(seenK) + ' / ' + fmtInt(seenN)) : null),
+    h('td', {class:'num'}, fmtPct(pt))));
+  if (info.hasCore && want.core === ANY){
+    tb.append(h('tr', {}, h('td', {colspan:'3', class:'muted small'}, 'Pick a core above (or in step 4) to see its breakdown.')));
+  } else {
+    const part = r.parts[0], partT = rT.parts[0];
+    const itemD = allItem, itemC = info.hasCore ? itemD.filter(d => d.core === want.core) : itemD;
+    if (info.hasCore) row('Core', want.core, part.pc, partT.pc, itemC.length, itemD.length);
+    if (want.attrs.length) row(want.attrs.length > 1 ? 'Attributes' : 'Attribute', want.attrs.join(' + '), part.pa, partT.pa,
+      itemC.filter(d => want.attrs.every(a => (d.attrs || []).includes(a))).length, itemC.length);
+    if (want.talent !== ANY) row('Talent', want.talent, part.pt, partT.pt, itemC.filter(d => d.talent === want.talent).length, itemC.length);
   }
   tb.append(h('tr', {class:'total'}, h('td', {}, 'Total'), h('td', {class:'num'}, fmtPct(p)), h('td', {class:'num'}, fmtPct(pT))));
-  box.append(card('Desglose',
-    h('table', {class:'bd'},
-      h('thead', {}, h('tr', {}, h('th', {}, 'Paso'), h('th', {class:'num'}, 'Tus datos'), h('th', {class:'num'}, 'Teórico'))),
-      tb),
-    h('p', {class:'small muted', style:'margin:10px 0 0'}, 'Cada fila es la probabilidad de ese paso dado lo anterior. Debajo del porcentaje: veces observadas / drops del paso anterior' + (NB ? ' (tuyos + datos base).' : '.') + ' El teórico supone que todas las opciones del catálogo son igual de probables; en tipo, clase y pieza depende de la actividad.'),
+  box.append(card('Breakdown',
+    h('table', {class:'bd'}, h('thead', {}, h('tr', {}, h('th', {}, 'Part'), h('th', {class:'num'}, 'Your data'), h('th', {class:'num'}, 'Theory'))), tb),
+    h('p', {class:'small muted', style:'margin:10px 0 0'}, 'Each row is the chance of that part given the ones above. Under each %: times seen / drops of this exact item' +
+      (info.hasCore ? ' with that core' : '') + '. Theory assumes every option is equally likely.'),
     h('details', {},
-      h('summary', {}, '¿Cómo se calcula?'),
+      h('summary', {}, 'How is it calculated?'),
       h('ul', {},
-        h('li', {}, 'Cada característica se estima con tus drops como (veces que salió + 1) / (total del grupo + nº de opciones). Con pocos datos se parece al supuesto teórico; con muchos, a lo que realmente te ha caído.'),
-        h('li', {}, 'En equipo, cada atributo core es un grupo aparte: primero se estima qué tan seguido te sale cada core y, dentro de cada uno, la clase, la pieza, los atributos menores y el talento se estiman solo con tus drops de ese core.'),
-        h('li', {}, 'Atributos y talentos de arma se estiman con todas tus armas, limitados a lo que puede salir en ese subtipo. Talentos de Brand, por pieza; en Gear Set el talento viene con el set.'),
-        h('li', {}, 'Las probabilidades se multiplican (cada característica sale de forma independiente). En Brand, los dos atributos menores son distintos y se extraen sin repetición.'),
-        h('li', {}, 'El loot dirigido y la fuente del drop cambian las probabilidades reales: para comparar, conviene registrar drops de una misma actividad.')))));
+        h('li', {}, 'The odds assume this exact item already dropped (type, set, slot and rarity from steps 1–3) and estimate how likely the roll you picked is.'),
+        h('li', {}, 'Each part is estimated in layers: first your drops of this exact item; when there are few, it fills in with similar drops (same set, then same type, then all gear or all weapons), and finally with equal odds for every option. Formula: (times seen + K × wider estimate) ÷ (drops + K), where K is the number of options. Each drop counts only once, in the narrowest group it belongs to.'),
+        h('li', {}, 'Gear: the core is estimated per item; attributes and talent are estimated separately for each core.'),
+        h('li', {}, 'Brand items roll 2 different attributes (drawn without repeats). Gear Set pieces, weapons and Named gear outside the chest and backpack roll 1.'),
+        h('li', {}, 'Named items always come with their unique attribute or perfect talent, so it never counts against you. Gear Set chests and backpacks always have the set talent.'),
+        h('li', {}, 'Parts are multiplied, assuming each one rolls independently. Targeted loot and the activity can change real odds, so logging drops from the same source keeps comparisons fair.')))));
 }
 
-/* =========================================================
-   3) HISTORIAL Y RESPALDO
-   ========================================================= */
-let histFilter = 'Todos', histLimit = 100, histPanel = null;
-
+/* ================= 3) HISTORY & BACKUP ================= */
+let histFilter = 'all', histLimit = 100, histPanel = null;
 function renderHist(){
   const root = $('#hist');
   root.replaceChildren();
-  const N = S.drops.length;
-  const nE = S.drops.filter(d => d.cat === 'Equipo').length;
-  root.append(card('Resumen', h('div', {class:'stat-grid'},
+  const N = S.drops.length, by = c => S.drops.filter(d => d.cat === c).length;
+  const gearDrops = S.drops.filter(d => d.cat !== 'weapon');
+  root.append(card('Summary', h('div', {class:'stat-grid'},
     h('div', {class:'stat'}, h('b', {}, fmtInt(N)), h('span', {}, 'Total')),
-    h('div', {class:'stat'}, h('b', {}, fmtInt(nE)), h('span', {}, 'Equipo')),
-    h('div', {class:'stat'}, h('b', {}, fmtInt(N - nE)), h('span', {}, 'Armas'))),
-    nE ? h('div', {class:'tags', style:'margin-top:10px'}, C().gearCores.map(core =>
-      h('span', {class:'tag'}, dot(COLOR[core]), core + ': ' + fmtInt(S.drops.filter(d => d.cat === 'Equipo' && d.core === core).length)))) : null,
-    BASE ? h('p', {class:'small muted', style:'margin:10px 0 0'}, 'La app incluye ' + fmtInt(BASE.drops.length) + ' drops base (' + BASE.label + '). No aparecen en esta lista y ' +
-      (S.useBase ? 'sí cuentan' : 'ahora no cuentan') + ' en las probabilidades (se cambia en Probabilidad).') : null));
+    h('div', {class:'stat'}, h('b', {}, fmtInt(by('brand'))), h('span', {}, 'Brand')),
+    h('div', {class:'stat'}, h('b', {}, fmtInt(by('gear'))), h('span', {}, 'Gear Set')),
+    h('div', {class:'stat'}, h('b', {}, fmtInt(by('weapon'))), h('span', {}, 'Weapons'))),
+    gearDrops.length ? h('div', {class:'tags', style:'margin-top:10px'}, CORES.map(core =>
+      h('span', {class:'tag'}, dot(COLOR[core]), core + ': ' + fmtInt(gearDrops.filter(d => d.core === core).length)))) : null,
+    BASE ? h('p', {class:'small muted', style:'margin:10px 0 0'}, 'The app includes ' + plural(BASE.drops.length, 'base drop') + ' (' + BASE.label + '). They aren’t listed here and ' +
+      (S.useBase ? 'are' : 'currently aren’t') + ' used for the odds (switch it in Odds).') : null));
 
   const since = S.drops.filter(d => d.ts > S.backupTs).length;
-  const backup = card(NATIVE ? 'Datos y respaldo' : 'Respaldo');
+  const backup = card(NATIVE ? 'Data & backup' : 'Backup');
   if (NATIVE && db.hasFile){
     backup.append(h('div', {class:'dbline'},
-      h('div', {}, h('div', {class:'small muted'}, 'Base de datos'), h('div', {class:'name'}, db.name || 'archivo .json')),
-      h('button', {type:'button', class:'btn', onclick: () => { histPanel = histPanel === 'db' ? null : 'db'; renderHist(); }}, 'Cambiar')));
+      h('div', {}, h('div', {class:'small muted'}, 'Database'), h('div', {class:'name'}, db.name || '.json file')),
+      h('button', {type:'button', class:'btn', onclick: () => { histPanel = histPanel === 'db' ? null : 'db'; renderHist(); }}, 'Change')));
     if (histPanel === 'db') backup.append(h('div', {class:'panel', style:'margin:0 0 12px'},
       h('button', {type:'button', class:'btn block', onclick: () => {
-        if (confirm('La app pasará a usar otro archivo y mostrará sus datos. Los datos actuales se quedan guardados en ' + db.name + '.')) { histPanel = null; nativePick('open'); }
-      }}, 'Abrir otro archivo'),
-      h('button', {type:'button', class:'btn block', style:'margin-top:8px', onclick: () => { histPanel = null; nativePick('create'); }}, 'Mover mis datos a un archivo nuevo')));
+        if (confirm('The app will switch to another file and show its data. Your current data stays saved in ' + db.name + '.')) { histPanel = null; nativePick('open'); }
+      }}, 'Open another file'),
+      h('button', {type:'button', class:'btn block', style:'margin-top:8px', onclick: () => { histPanel = null; nativePick('create'); }}, 'Move my data to a new file')));
   }
   backup.append(
     h('p', {class:'small ' + (since >= 25 ? 'warn' : 'muted'), style:'margin:0 0 10px'},
-      S.backupTs ? fmtInt(since) + ' drops nuevos desde tu última copia.' : (N ? 'Todavía no has hecho una copia de respaldo.' : (NATIVE ? 'Haz una copia de vez en cuando (por ejemplo en Drive) por si pierdes el teléfono.' : 'Los datos se guardan en este navegador. Haz respaldos de vez en cuando.'))),
+      S.backupTs ? plural(since, 'new drop') + ' since your last backup.' : (N ? 'You haven’t made a backup yet.' :
+        (NATIVE ? 'Save a copy now and then (to Drive, for example) in case you lose your phone.' : 'Data is saved in this browser. Make backups now and then.'))),
     h('div', {class:'btn-grid'},
-      h('button', {type:'button', class:'btn', onclick: exportJSON}, NATIVE ? 'Guardar copia' : 'Exportar respaldo'),
-      h('button', {type:'button', class:'btn', onclick: () => { if (NATIVE) nCall('importFile'); else $('#file').click(); }}, 'Importar archivo'),
-      h('button', {type:'button', class:'btn', onclick: () => { histPanel = histPanel === 'copy' ? null : 'copy'; renderHist(); }}, 'Copiar como texto'),
-      h('button', {type:'button', class:'btn', onclick: () => { histPanel = histPanel === 'paste' ? null : 'paste'; renderHist(); }}, 'Pegar respaldo'),
-      h('button', {type:'button', class:'btn', onclick: exportCSV}, 'Exportar CSV'),
-      h('button', {type:'button', class:'btn danger', onclick: clearAll}, 'Borrar todo')));
+      h('button', {type:'button', class:'btn', onclick: exportJSON}, NATIVE ? 'Save a copy' : 'Export backup'),
+      h('button', {type:'button', class:'btn', onclick: () => { if (NATIVE) nCall('importFile'); else $('#file').click(); }}, 'Import file'),
+      h('button', {type:'button', class:'btn', onclick: () => { histPanel = histPanel === 'copy' ? null : 'copy'; renderHist(); }}, 'Copy as text'),
+      h('button', {type:'button', class:'btn', onclick: () => { histPanel = histPanel === 'paste' ? null : 'paste'; renderHist(); }}, 'Paste backup'),
+      h('button', {type:'button', class:'btn', onclick: exportCSV}, 'Export CSV'),
+      h('button', {type:'button', class:'btn danger', onclick: clearAll}, 'Delete all')));
   if (histPanel === 'copy'){
     const ta = h('textarea', {rows:'6', readonly:true});
     ta.value = backupText();
     backup.append(h('div', {class:'panel'}, ta,
-      h('button', {type:'button', class:'btn primary block', style:'margin-top:8px', onclick: () => copyText(ta)}, 'Copiar al portapapeles'),
-      h('p', {class:'small muted'}, 'Pega este texto en una nota o en un mensaje para guardarlo. Luego puedes restaurarlo con "Pegar respaldo".')));
+      h('button', {type:'button', class:'btn primary block', style:'margin-top:8px', onclick: () => copyText(ta)}, 'Copy to clipboard'),
+      h('p', {class:'small muted'}, 'Paste this text into a note or message to keep it. Restore it later with "Paste backup".')));
   } else if (histPanel === 'paste'){
-    const ta = h('textarea', {rows:'6', placeholder:'Pega aquí el texto del respaldo'});
+    const ta = h('textarea', {rows:'6', placeholder:'Paste the backup text here'});
     backup.append(h('div', {class:'panel'}, ta,
-      h('button', {type:'button', class:'btn primary block', style:'margin-top:8px', onclick: () => { if (importData(ta.value)) { histPanel = null; renderHist(); } }}, 'Importar'),
-      h('p', {class:'small muted'}, 'Se combinan con tus drops actuales, sin duplicar.')));
+      h('button', {type:'button', class:'btn primary block', style:'margin-top:8px', onclick: () => { if (importData(ta.value)){ histPanel = null; renderHist(); } }}, 'Import'),
+      h('p', {class:'small muted'}, 'Merged with your current drops, without duplicates.')));
   }
   root.append(backup);
 
-  if (!N){ root.append(h('div', {class:'empty'}, 'Aún no has registrado drops.')); return; }
-
-  root.append(seg(['Todos','Equipo','Arma'].map(v => ({v, label: v === 'Arma' ? 'Armas' : v})), histFilter, v => { histFilter = v; histLimit = 100; renderHist(); }));
-  const list = S.drops.filter(d => histFilter === 'Todos' || d.cat === histFilter).slice().sort((a, b) => b.ts - a.ts);
+  if (!N){ root.append(h('div', {class:'empty'}, 'No drops logged yet.')); return; }
+  root.append(seg([{v:'all', label:'All'}, {v:'brand', label:'Brand'}, {v:'gear', label:'Gear Set'}, {v:'weapon', label:'Weapons'}],
+    histFilter, v => { histFilter = v; histLimit = 100; renderHist(); }));
+  const list = S.drops.filter(d => histFilter === 'all' || d.cat === histFilter).slice().sort((a, b) => b.ts - a.ts);
   const wrap = h('div', {});
   for (const d of list.slice(0, histLimit)) wrap.append(dropItem(d));
   root.append(wrap);
-  if (list.length > histLimit) root.append(h('button', {type:'button', class:'btn block', onclick: () => { histLimit += 100; renderHist(); }}, 'Mostrar más (' + fmtInt(list.length - histLimit) + ')'));
+  if (list.length > histLimit) root.append(h('button', {type:'button', class:'btn block', onclick: () => { histLimit += 100; renderHist(); }}, 'Show more (' + fmtInt(list.length - histLimit) + ')'));
+}
+function dropPerk(d){
+  const n = findNamed(d);
+  if (n) return n.perk;
+  if (d.cat === 'gear' && TALENT_SLOTS.includes(d.slot)) return 'Gear Set talent';
+  return null;
 }
 function dropItem(d){
-  const title = d.cat === 'Equipo' ? d.sub + ' · ' + (CLASS_LABEL[d.clase] || d.clase) : d.sub;
-  const time = new Date(d.ts).toLocaleString('es-CO', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+  const time = d.ts ? new Date(d.ts).toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}) : '';
   const tags = h('div', {class:'tags'});
   const t = (txt, c, cls) => h('span', {class:'tag' + (cls ? ' ' + cls : '')}, dot(c), txt);
-  if (d.cat === 'Equipo') tags.append(t(d.core, COLOR[d.core]));
-  else if (d.core2) tags.append(t(d.core2));
-  (d.minors || []).forEach(m => tags.append(t(m, COLOR[m])));
+  if (d.core) tags.append(t(d.core, COLOR[d.core]));
+  (d.attrs || []).forEach(a => tags.append(t(a, COLOR[a])));
   if (d.talent) tags.append(t(d.talent, null, 'talent'));
+  const perk = dropPerk(d);
+  if (perk) tags.append(t(perk, null, 'perk-tag'));
   return h('div', {class:'drop'},
     h('div', {class:'drop-top'},
-      h('div', {}, h('div', {class:'drop-title'}, title), h('div', {class:'drop-time'}, time)),
-      h('button', {type:'button', class:'icon-btn', 'aria-label':'Eliminar drop', onclick: () => {
-        if (!confirm('¿Eliminar este drop?')) return;
+      h('div', {}, h('div', {class:'drop-title'}, itemName(d)), h('div', {class:'drop-sub'}, itemSub(d) + (time ? ' · ' + time : ''))),
+      h('button', {type:'button', class:'icon-btn', 'aria-label':'Delete drop', onclick: () => {
+        if (!confirm('Delete this drop?')) return;
         S.drops = S.drops.filter(x => x.id !== d.id); persist(); renderHist();
       }}, '×')),
     tags,
     d.note ? h('div', {class:'small muted', style:'margin-top:6px'}, d.note) : null);
 }
-function backupText(){ return JSON.stringify({app:'td2-drop-tracker', v:2, exported:new Date().toISOString(), catalog:S.catalog, drops:S.drops}); }
+function backupText(){ return JSON.stringify({app:'td2-drop-tracker', v:3, exported:new Date().toISOString(), catalog:S.catalog, drops:S.drops}); }
 function stamp(){ const d = new Date(), p = n => String(n).padStart(2, '0'); return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()); }
 function download(name, text, mime){
   const blob = new Blob([text], {type: mime});
@@ -1116,54 +1180,48 @@ function download(name, text, mime){
 }
 function markBackup(){ S.backupTs = Date.now(); persist(); }
 function exportJSON(){
-  if (NATIVE){ pendingBackup = true; nCall('exportFile', 'td2-drops-copia-' + stamp() + '.json', 'application/json', backupText()); return; }
-  download('td2-drops-' + stamp() + '.json', backupText(), 'application/json'); markBackup(); renderHist(); toast('Respaldo exportado');
+  if (NATIVE){ pendingBackup = true; nCall('exportFile', 'td2-drops-backup-' + stamp() + '.json', 'application/json', backupText()); return; }
+  download('td2-drops-backup-' + stamp() + '.json', backupText(), 'application/json'); markBackup(); renderHist(); toast('Backup exported');
 }
 function exportCSV(){
   const esc = v => { const s = v == null ? '' : String(v); return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
-  const head = ['fecha','tipo','clase','subtipo','core','core_arma','core_2','menor_1','menor_2','talento','nota'];
+  const head = ['date','type','set','slot','rarity','named','core','attribute_1','attribute_2','talent','unique_perk','note'];
   const lines = [head.join(',')];
   for (const d of S.drops.slice().sort((a, b) => a.ts - b.ts)){
-    lines.push([new Date(d.ts).toISOString(), d.cat, d.clase ? CLASS_LABEL[d.clase] : '', d.sub, d.core || '', d.core1 || '', d.core2 || '',
-      (d.minors || [])[0] || '', (d.minors || [])[1] || '', d.talent || '', d.note || ''].map(esc).join(','));
+    lines.push([d.ts ? new Date(d.ts).toISOString() : '', CAT_LABEL[d.cat], d.set || '', d.slot, d.rarity, d.named || '', d.core || '',
+      (d.attrs || [])[0] || '', (d.attrs || [])[1] || '', d.talent || '', dropPerk(d) || '', d.note || ''].map(esc).join(','));
   }
-  const csv = '\ufeff' + lines.join('\n');
+  const csv = '﻿' + lines.join('\n');
   if (NATIVE){ pendingBackup = false; nCall('exportFile', 'td2-drops-' + stamp() + '.csv', 'text/csv', csv); return; }
   download('td2-drops-' + stamp() + '.csv', csv, 'text/csv');
 }
 function copyText(ta){
-  const done = () => { markBackup(); toast('Copiado al portapapeles'); };
+  const done = () => { markBackup(); toast('Copied to clipboard'); };
   if (NATIVE){ if (nCall('copy', ta.value) === 'ok') done(); else fallbackCopy(ta, done); return; }
-  if (navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(ta.value).then(done, () => fallbackCopy(ta, done));
-  } else fallbackCopy(ta, done);
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, () => fallbackCopy(ta, done));
+  else fallbackCopy(ta, done);
 }
 function fallbackCopy(ta, done){
   ta.removeAttribute('readonly'); ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length);
   let ok = false; try{ ok = document.execCommand('copy'); }catch(e){}
   ta.setAttribute('readonly', '');
-  if (ok) done(); else toast('Selecciona el texto y cópialo manualmente');
+  if (ok) done(); else toast('Select the text and copy it manually');
 }
 function importData(text){
   let d;
-  try{ d = JSON.parse(text); }catch(e){ alert('El texto no es un respaldo válido.'); return false; }
+  try{ d = JSON.parse(text); }catch(e){ alert('That text isn’t a valid backup.'); return false; }
   const arr = Array.isArray(d) ? d : d && d.drops;
-  if (!Array.isArray(arr)){ alert('El respaldo no contiene drops.'); return false; }
+  if (!Array.isArray(arr)){ alert('That backup has no drops.'); return false; }
   const ids = new Set(S.drops.map(x => x.id));
   let added = 0;
-  for (const x of arr){
-    if (!x || !TYPES.includes(x.cat) || !x.sub) continue;
-    if (!x.id) x.id = uid();
+  for (const x of migrateAll(arr)){
     if (ids.has(x.id)) continue;
-    if (!x.ts) x.ts = Date.now();
-    if (!Array.isArray(x.minors)) x.minors = [];
-    migrateDrop(x);
     S.drops.push(x); ids.add(x.id); added++;
   }
   S.drops.sort((a, b) => a.ts - b.ts);
-  if (d && d.catalog && confirm('El respaldo incluye un catálogo. ¿Reemplazar tu catálogo actual por el del respaldo?')) S.catalog = normalizeCatalog(d.catalog);
+  if (d && d.catalog && d.catalog.v === 3 && confirm('The backup includes a catalog. Replace your current catalog with it?')){ S.catalog = normalizeCatalog(d.catalog); resetSelections(); }
   persist();
-  toast(fmtInt(added) + ' drops importados');
+  toast(plural(added, 'drop') + ' imported');
   return true;
 }
 $('#file').addEventListener('change', e => {
@@ -1175,14 +1233,12 @@ $('#file').addEventListener('change', e => {
 });
 function clearAll(){
   if (!S.drops.length) return;
-  if (!confirm('¿Borrar los ' + S.drops.length + ' drops registrados? Esta acción no se puede deshacer.')) return;
-  if (!confirm('Confirma de nuevo: se borrarán todos los drops.')) return;
-  S.drops = []; persist(); renderHist(); toast('Drops borrados');
+  if (!confirm('Delete all ' + plural(S.drops.length, 'drop') + '? This can’t be undone.')) return;
+  if (!confirm('Please confirm again: every drop will be deleted.')) return;
+  S.drops = []; persist(); renderHist(); toast('Drops deleted');
 }
 
-/* =========================================================
-   4) CATÁLOGO EDITABLE
-   ========================================================= */
+/* ================= 4) CATALOG ================= */
 let CW = null;
 function markDirty(){ catDirty = true; const b = $('#catsave'); if (b) b.disabled = false; }
 function listArea(get, set, rows){
@@ -1191,66 +1247,82 @@ function listArea(get, set, rows){
   ta.addEventListener('input', () => { set(parseLines(ta.value)); markDirty(); });
   return ta;
 }
+function lineArea(get, set, rows){
+  const ta = h('textarea', {rows: String(rows || 8), spellcheck:'false', class:'mono'});
+  ta.value = get();
+  ta.addEventListener('input', () => { set(ta.value); markDirty(); });
+  return ta;
+}
+const ngToText = l => l.map(x => [x.n, x.set, x.slot, x.perk].join(' | ')).join('\n');
+const nwToText = l => l.map(x => [x.n, x.type, x.perk, x.base].join(' | ').replace(/ \| $/, '')).join('\n');
+function parseNamed(text, kind){
+  const ok = [], bad = [];
+  for (const line of text.split(/\r?\n/)){
+    if (!line.trim()) continue;
+    const p = line.split('|').map(s => s.trim());
+    if (kind === 'gear'){
+      if (p.length >= 3 && p[0] && p[1] && GEAR_SLOTS.includes(p[2])) ok.push({n:p[0], set:p[1], slot:p[2], perk:p[3] || 'Unique perk'}); else bad.push(line);
+    } else {
+      const type = T_ABBR[p[1]] || p[1];
+      if (p.length >= 2 && p[0] && WEAPON_TYPES.includes(type)) ok.push({n:p[0], type, perk:p[2] || 'Unique talent', base:p[3] || ''}); else bad.push(line);
+    }
+  }
+  return {ok, bad};
+}
 function renderCatalog(){
-  if (!catDirty || !CW) CW = clone(S.catalog);
+  if (!catDirty || !CW) CW = Object.assign(clone(S.catalog), {ngText: ngToText(S.catalog.namedGear), nwText: nwToText(S.catalog.namedWeapons)});
   const root = $('#catalog');
   root.replaceChildren();
   root.append(h('p', {class:'small muted', style:'margin:12px 2px 0'},
-    'Listas precargadas con los atributos y talentos del juego. Edítalas si una temporada agrega o cambia algo: una opción por línea. Cambiar un nombre no modifica los drops ya registrados.'));
+    'Preloaded with the game’s sets, attributes, talents and Named items (up to Red Horizon). Edit them if a season adds or changes something: one item per line. Renaming something doesn’t change drops you already logged.'));
+  root.append(card('Sets',
+    field('Brand Sets', listArea(() => CW.brands, v => { CW.brands = v; }, 8)),
+    field('Gear Sets', listArea(() => CW.gearSets, v => { CW.gearSets = v; }, 8))));
+  root.append(card('Attributes',
+    field('Gear attributes', listArea(() => CW.gearAttrs, v => { CW.gearAttrs = v; }, 8)),
+    field('Weapon attributes', listArea(() => CW.weaponAttrs, v => { CW.weaponAttrs = v; }, 5), 'the weapon’s core 2 is excluded')));
+  root.append(card('Gear talents (Brand High End)',
+    h('p', {class:'small muted', style:'margin:0'}, 'Gear Set chests and backpacks always have the set’s own talent, so they aren’t listed.'),
+    field('Chest', listArea(() => CW.chestTalents, v => { CW.chestTalents = v; }, 7)),
+    field('Backpack', listArea(() => CW.backpackTalents, v => { CW.backpackTalents = v; }, 7))));
 
-  root.append(card('Equipo · atributos',
-    field('Core', listArea(() => CW.gearCores, v => { CW.gearCores = v; }, 3)),
-    field('Atributos menores', listArea(() => CW.gearMinors, v => { CW.gearMinors = v; }, 8))));
-
-  root.append(card('Equipo · talentos Brand',
-    h('p', {class:'small muted', style:'margin:0'}, 'Las piezas de Gear Set traen el talento propio del set, así que no se listan aquí.'),
-    field('Pechera', listArea(() => CW.gearTalents['Brand|Pechera'], v => { CW.gearTalents['Brand|Pechera'] = v; }, 7)),
-    field('Mochila', listArea(() => CW.gearTalents['Brand|Mochila'], v => { CW.gearTalents['Brand|Mochila'] = v; }, 7))));
-
-  const wc = card('Armas · atributos core');
-  for (const s of W_SUBS){
-    const w = CW.weapons[s];
-    const i1 = h('input', {type:'text', value:w.core1, 'aria-label':'Core 1 ' + s, oninput: e => { w.core1 = e.target.value.trim(); markDirty(); }});
-    const i2 = h('input', {type:'text', value:w.core2.join('; '), placeholder:'Sin atributo secundario', 'aria-label':'Core 2 ' + s,
-      oninput: e => { w.core2 = e.target.value.split(';').map(x => x.trim()).filter(Boolean); markDirty(); }});
-    wc.append(h('div', {class:'sub-row'}, h('b', {}, s), i1, i2));
-  }
-  wc.append(h('p', {class:'small muted', style:'margin:8px 0 0'}, 'Si el secundario puede variar, separa las opciones con punto y coma (;).'));
-  root.append(wc);
-
-  root.append(card('Armas · atributo menor',
-    field('Opciones', listArea(() => CW.weaponMinors, v => { CW.weaponMinors = v; }, 6), 'se excluye el secundario del arma')));
-
-  const wtCard = card('Armas · talentos');
-  wtCard.append(h('p', {class:'small muted', style:'margin:0 0 6px'}, 'Marca en qué armas puede salir cada talento.'));
+  const wtCard = card('Weapon talents (High End)');
+  wtCard.append(h('p', {class:'small muted', style:'margin:0 0 6px'}, 'Tick the weapon types each talent can roll on.'));
   const wtList = h('div', {});
   wtCard.append(wtList);
   CW.weaponTalents.sort((a, b) => coll(a.n, b.n));
   renderWTalents(wtList);
-  const newIn = h('input', {type:'text', placeholder:'Nuevo talento'});
+  const newIn = h('input', {type:'text', placeholder:'New talent'});
   wtCard.append(h('div', {class:'wt-top', style:'margin-top:10px'}, newIn,
     h('button', {type:'button', class:'btn', onclick: () => {
       const n = newIn.value.trim(); if (!n) return;
-      CW.weaponTalents.push({n, w: W_SUBS.slice()}); newIn.value = ''; markDirty(); renderWTalents(wtList);
-    }}, 'Añadir')));
+      CW.weaponTalents.push({n, w: WEAPON_TYPES.slice()}); newIn.value = ''; markDirty(); renderWTalents(wtList);
+    }}, 'Add')));
   root.append(wtCard);
 
+  root.append(card('Named gear',
+    h('p', {class:'small muted', style:'margin:0'}, 'One per line: Name | Brand | Slot | Unique attribute or perfect talent. Slot: ' + GEAR_SLOTS.join(', ') + '. On chests and backpacks the last field is the talent; on other slots it’s the unique attribute.'),
+    field('Items', lineArea(() => CW.ngText, v => { CW.ngText = v; }, 10), plural(CW.namedGear.length, 'item'))));
+  root.append(card('Named weapons',
+    h('p', {class:'small muted', style:'margin:0'}, 'One per line: Name | Type | Unique talent | Base weapon. Type: ' + WEAPON_TYPES.join(', ') + ' (or AR, MMR, SMG, LMG, SG, RIF, PIS).'),
+    field('Items', lineArea(() => CW.nwText, v => { CW.nwText = v; }, 10), plural(CW.namedWeapons.length, 'item'))));
+
   root.append(h('div', {class:'actionbar'},
-    h('button', {type:'button', class:'btn primary block', id:'catsave', disabled: !catDirty, onclick: saveCatalog}, 'Guardar catálogo'),
+    h('button', {type:'button', class:'btn primary block', id:'catsave', disabled: !catDirty, onclick: saveCatalog}, 'Save catalog'),
     h('button', {type:'button', class:'btn block', style:'margin-top:8px', onclick: () => {
-      if (!confirm('¿Restaurar el catálogo original? Tus drops no se borran.')) return;
-      S.catalog = clone(DEFAULT_CATALOG); catDirty = false; CW = null; persist(); renderCatalog(); toast('Catálogo restaurado');
-    }}, 'Restaurar valores originales')));
+      if (!confirm('Restore the original catalog? Your drops aren’t deleted.')) return;
+      S.catalog = clone(DEFAULT_CATALOG); catDirty = false; CW = null; resetSelections(); persist(); renderCatalog(); toast('Catalog restored');
+    }}, 'Restore defaults')));
 }
 function renderWTalents(container){
   container.replaceChildren();
   for (const t of CW.weaponTalents){
-    const name = h('input', {type:'text', value:t.n, 'aria-label':'Nombre del talento', oninput: e => { t.n = e.target.value.trim(); markDirty(); }});
-    const del = h('button', {type:'button', class:'icon-btn', 'aria-label':'Eliminar talento', onclick: () => {
+    const name = h('input', {type:'text', value:t.n, 'aria-label':'Talent name', oninput: e => { t.n = e.target.value.trim(); markDirty(); }});
+    const del = h('button', {type:'button', class:'icon-btn', 'aria-label':'Remove talent', onclick: () => {
       CW.weaponTalents.splice(CW.weaponTalents.indexOf(t), 1); markDirty(); renderWTalents(container);
     }}, '×');
     const mini = h('div', {class:'mini'});
-    for (const s of W_SUBS){
+    for (const s of WEAPON_TYPES){
       const b = h('button', {type:'button', class:'mchip', 'aria-pressed': t.w.includes(s) ? 'true' : 'false', onclick: () => {
         const j = t.w.indexOf(s); if (j >= 0) t.w.splice(j, 1); else t.w.push(s);
         b.setAttribute('aria-pressed', t.w.includes(s) ? 'true' : 'false'); markDirty();
@@ -1261,19 +1333,23 @@ function renderWTalents(container){
   }
 }
 function saveCatalog(){
-  CW.weaponTalents = CW.weaponTalents.filter(t => t.n);
-  S.catalog = normalizeCatalog(CW);
+  const g = parseNamed(CW.ngText, 'gear'), w = parseNamed(CW.nwText, 'weapon');
+  const bad = g.bad.length + w.bad.length;
+  if (bad && !confirm(plural(bad, 'Named line') + ' couldn’t be read (check the slot or type) and will be skipped:\n\n' + g.bad.concat(w.bad).slice(0, 6).join('\n') + '\n\nSave anyway?')) return;
+  const next = Object.assign({}, CW, {namedGear: g.ok, namedWeapons: w.ok});
+  delete next.ngText; delete next.nwText;
+  next.weaponTalents = next.weaponTalents.filter(t => t.n);
+  next.v = 3;
+  S.catalog = normalizeCatalog(next);
   catDirty = false; CW = null;
+  resetSelections();
   persist();
-  // Limpia selecciones que ya no existan
-  Object.assign(R, {core:null, minors:[], talent:null});
-  Object.assign(Q, blankSel(Q.cat));
   renderCatalog();
-  toast('Catálogo guardado');
+  toast('Catalog saved');
 }
 window.addEventListener('beforeunload', e => { if (catDirty){ e.preventDefault(); e.returnValue = ''; } });
 
-/* ---------- Inicio ---------- */
+/* ================= Start ================= */
 if (NATIVE) nativeLoad(); else load();
 updateChrome();
 renderView();

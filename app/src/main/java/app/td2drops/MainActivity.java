@@ -31,9 +31,9 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Drops TD2: la interfaz es la página web incluida en assets/index.html.
- * Los datos viven en un archivo .json que el usuario elige (Storage Access Framework).
- * Además se guarda una copia interna (cache.json) por si el archivo se mueve o se borra.
+ * Drops TD2: the UI is the web page bundled in assets/index.html.
+ * Data lives in a .json file the user picks (Storage Access Framework).
+ * An internal copy (cache.json) is also kept in case the file is moved or deleted.
  */
 public class MainActivity extends Activity {
 
@@ -73,7 +73,7 @@ public class MainActivity extends Activity {
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                return true; // la app no navega a ningún otro sitio
+                return true; // the app never navigates anywhere else
             }
         });
         web.setWebChromeClient(new WebChromeClient() {
@@ -81,7 +81,7 @@ public class MainActivity extends Activity {
             public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
                 new AlertDialog.Builder(MainActivity.this)
                         .setMessage(message)
-                        .setPositiveButton("Aceptar", (d, w) -> result.confirm())
+                        .setPositiveButton("OK", (d, w) -> result.confirm())
                         .setOnCancelListener(d -> result.cancel())
                         .show();
                 return true;
@@ -91,8 +91,8 @@ public class MainActivity extends Activity {
             public boolean onJsConfirm(WebView view, String url, String message, JsResult result) {
                 new AlertDialog.Builder(MainActivity.this)
                         .setMessage(message)
-                        .setPositiveButton("Aceptar", (d, w) -> result.confirm())
-                        .setNegativeButton("Cancelar", (d, w) -> result.cancel())
+                        .setPositiveButton("OK", (d, w) -> result.confirm())
+                        .setNegativeButton("Cancel", (d, w) -> result.cancel())
                         .setOnCancelListener(d -> result.cancel())
                         .show();
                 return true;
@@ -126,7 +126,7 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
-    // ---------------------------------------------------------------- utilidades
+    // ---------------------------------------------------------------- helpers
 
     private void js(String code) {
         if (web != null) web.evaluateJavascript(code, null);
@@ -155,13 +155,13 @@ public class MainActivity extends Activity {
         } catch (Exception ignored) {
         }
         String last = uri.getLastPathSegment();
-        if (last == null) return "archivo .json";
+        if (last == null) return "file.json";
         int i = last.lastIndexOf('/');
         return i >= 0 ? last.substring(i + 1) : last;
     }
 
     private static String readAll(InputStream in) throws Exception {
-        if (in == null) throw new Exception("no se pudo abrir el archivo");
+        if (in == null) throw new Exception("couldn't open the file");
         try (InputStream is = in; ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             byte[] buf = new byte[16384];
             int n;
@@ -180,11 +180,11 @@ public class MainActivity extends Activity {
         byte[] bytes = (text == null ? "" : text).getBytes(StandardCharsets.UTF_8);
         OutputStream os = null;
         try {
-            os = getContentResolver().openOutputStream(uri, "wt"); // "wt" = escribir y truncar
+            os = getContentResolver().openOutputStream(uri, "wt"); // "wt" = write and truncate
         } catch (Exception first) {
             os = getContentResolver().openOutputStream(uri, "rwt");
         }
-        if (os == null) throw new Exception("no se pudo escribir el archivo");
+        if (os == null) throw new Exception("couldn't write the file");
         try (OutputStream o = os) {
             o.write(bytes);
             o.flush();
@@ -228,12 +228,12 @@ public class MainActivity extends Activity {
             try {
                 startActivityForResult(intent, request);
             } catch (Exception e) {
-                js("window.__nativeSaved && window.__nativeSaved(false, " + q("No se pudo abrir el selector de archivos: " + errorText(e)) + ")");
+                js("window.__nativeSaved && window.__nativeSaved(false, " + q("Couldn't open the file picker: " + errorText(e)) + ")");
             }
         });
     }
 
-    // ---------------------------------------------------------------- resultados del selector
+    // ---------------------------------------------------------------- file picker results
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -261,9 +261,9 @@ public class MainActivity extends Activity {
             case REQ_EXPORT: {
                 try {
                     writeUri(uri, pendingExport);
-                    js("window.__nativeSaved && window.__nativeSaved(true, " + q("Archivo guardado: " + displayName(uri)) + ")");
+                    js("window.__nativeSaved && window.__nativeSaved(true, " + q("File saved: " + displayName(uri)) + ")");
                 } catch (Exception e) {
-                    js("window.__nativeSaved && window.__nativeSaved(false, " + q("No se pudo guardar: " + errorText(e)) + ")");
+                    js("window.__nativeSaved && window.__nativeSaved(false, " + q("Couldn't save: " + errorText(e)) + ")");
                 }
                 pendingExport = null;
                 break;
@@ -273,7 +273,7 @@ public class MainActivity extends Activity {
                     String text = readUri(uri);
                     js("window.__nativeImport && window.__nativeImport(" + q(text) + ")");
                 } catch (Exception e) {
-                    js("window.__nativeSaved && window.__nativeSaved(false, " + q("No se pudo leer el archivo: " + errorText(e)) + ")");
+                    js("window.__nativeSaved && window.__nativeSaved(false, " + q("Couldn't read the file: " + errorText(e)) + ")");
                 }
                 break;
             }
@@ -282,7 +282,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    // ---------------------------------------------------------------- puente JavaScript
+    // ---------------------------------------------------------------- JavaScript bridge
 
     private class Bridge {
 
@@ -305,7 +305,7 @@ public class MainActivity extends Activity {
                 Uri u = dbUri();
                 if (u == null) {
                     o.put("ok", false);
-                    o.put("error", "no hay archivo elegido");
+                    o.put("error", "no file chosen");
                 } else {
                     o.put("ok", true);
                     o.put("text", readUri(u));
@@ -324,7 +324,7 @@ public class MainActivity extends Activity {
         public synchronized String save(String text) {
             writeCache(text);
             Uri u = dbUri();
-            if (u == null) return "no hay archivo elegido";
+            if (u == null) return "no file chosen";
             try {
                 writeUri(u, text);
                 return "ok";
@@ -371,7 +371,7 @@ public class MainActivity extends Activity {
             launch(i, REQ_OPEN_DB);
         }
 
-        /** Vuelve al archivo anterior si el recién elegido no era válido. */
+        /** Goes back to the previous file if the newly picked one wasn't valid. */
         @JavascriptInterface
         public void revert() {
             String prev = prefs.getString(KEY_PREV_URI, null);

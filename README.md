@@ -1,53 +1,78 @@
 # Drops TD2 (Android)
 
-App Android sin conexión para registrar drops de The Division 2 y calcular probabilidades.
-Los datos se guardan en un archivo `.json` que eliges en tu teléfono (por ejemplo en Documentos).
+Offline Android app for The Division 2 players: log the gear and weapons that drop for you and see the odds of
+getting the roll you want once a specific item drops.
 
-- Sin permiso de Internet.
-- La interfaz es `app/src/main/assets/index.html` (la misma página funciona también en un navegador).
-- `MainActivity.java` muestra la página en un WebView y lee/escribe el archivo `.json` con el selector de archivos de Android.
-- Además guarda una copia interna, por si el archivo se mueve o se borra.
+- **Log drop** in 4 steps that unlock in order: type & set → slot → rarity (High End / Named) → attributes & talent.
+  Named items lock their unique attribute or perfect talent; Gear Set chests and backpacks lock the set talent.
+- **Odds**: pick an item (steps 1–3) and the roll you want (step 4). The app estimates the chance of that roll
+  *once that item drops*, from your own drops, separately for each core attribute.
+- Your data lives in a `.json` file you choose on your phone (for example in Documents). No internet permission.
+- Catalog preloaded with every Brand Set, Gear Set, attribute, talent and Named item up to Red Horizon (Y8S3),
+  editable inside the app.
 
-## Compilar con GitHub Actions
+## How the odds are estimated
 
-Cada `push` a `main` ejecuta `.github/workflows/build.yml` y publica `drops-td2.apk` como artefacto.
-Cada compilación también publica el APK en **Releases** (descárgalo desde el teléfono en
-`https://github.com/MiguelFlVe/td2-drops-app/releases/latest`).
+Each part (core, attributes, talent) is estimated in layers, from the narrowest group of drops to the widest:
 
-La clave de firma va cifrada en `app/release.jks.enc`. Para activar una firma estable (actualizaciones
-que se instalan encima sin desinstalar), crea el secreto de Actions `SIGNING_PASSWORD`.
-Sin ese secreto, el APK se firma con una clave de depuración distinta en cada compilación.
+```
+p(group) = (times seen in the group + K × p(wider group)) / (drops in the group + K)
+```
 
-## Compilar en Android Studio
+`K` is the number of options, the widest group falls back to equal odds (1 / K), and each drop counts only once,
+in the narrowest group it belongs to. With no data the result is the theoretical value; with many drops of the
+exact item, it approaches what you actually got. Groups used:
 
-1. Abre esta carpeta con **File → Open**.
-2. Espera a que termine la sincronización de Gradle.
+| Part | Narrow → wide |
+|---|---|
+| Core | this item → same set → same type (Brand / Gear Set) → all gear |
+| Gear attributes | this item → same type → all gear (each with the same core) → all gear |
+| Brand talent | this item → same slot (each with the same core) → same slot |
+| Weapon attribute | this item → same weapon type → all weapons |
+| Weapon talent | this item → all High End weapons |
+
+Brand items roll 2 distinct attributes (drawn without repeats); Gear Set pieces, weapons and Named gear outside
+the chest and backpack roll 1.
+
+## Base data
+
+`app/src/main/assets/base-data.js` can bundle drops with the app (for example, a whole season).
+
+- They aren't listed in History, but they're used for the odds while **Include base data** is on (Odds, step 4).
+- Drops a user already has in their own file (same `id`) aren't counted twice.
+- "Your drops of this item" and "you: X of Y" only count the user's own drops.
+
+To update it, export from the app (**History → Save a copy**) and run:
+
+```
+python3 tools/actualizar_datos_base.py backup.json --label "Red Horizon season"
+```
+
+The script removes each drop's note and date, because this repository is public.
+
+## Build with GitHub Actions
+
+Every push to `main` runs `.github/workflows/build.yml`, publishes `drops-td2.apk` as an artifact and as a
+**Release** (download it on your phone from `https://github.com/MiguelFlVe/td2-drops-app/releases/latest`).
+
+The signing key is stored encrypted in `app/release.jks.enc`. Add the Actions secret `SIGNING_PASSWORD` for a
+stable signature (updates install over the previous version). Without it, each build uses a different debug key.
+
+## Build in Android Studio
+
+1. Open this folder with **File → Open**.
+2. Wait for the Gradle sync to finish.
 3. **Build → Build App Bundle(s) / APK(s) → Build APK(s)**.
-4. El APK queda en `app/build/outputs/apk/`.
+4. The APK is in `app/build/outputs/apk/`.
 
-## Instalar en el teléfono
+## Install on your phone
 
-1. Copia el APK al teléfono y ábrelo.
-2. Si Android lo pide, permite "Instalar apps desconocidas" para la app desde la que lo abres (Archivos, Chrome…).
-3. Al abrir Drops TD2 por primera vez, elige **Crear archivo nuevo** o **Abrir archivo existente**.
+1. Download the APK on your phone and open it.
+2. If Android asks, allow "Install unknown apps" for the app you're opening it from (Files, Chrome…).
+   If Play Protect warns about an unknown app, choose **Install anyway**.
+3. The first time you open Drops TD2, choose **Create new file** or **Open existing file**.
 
-## Datos base
+## Disclaimer
 
-`app/src/main/assets/base-data.js` trae drops incluidos en la app (por ejemplo, los de una temporada completa).
-
-- No aparecen en Historial, pero cuentan en las probabilidades mientras **Incluir datos base** esté activo (en Probabilidad).
-- Los drops que el usuario ya tiene en su archivo (mismo `id`) no se cuentan dos veces.
-- "Veces que ya lo conseguiste" y "Conseguido" cuentan solo los drops propios.
-
-Para actualizarlos, exporta desde la app (**Historial → Guardar copia**) y ejecuta:
-
-```
-python3 tools/actualizar_datos_base.py respaldo.json --label "Temporada Red Horizon"
-```
-
-El script quita las notas y las fechas de cada drop, porque este repositorio es público.
-
-## Aviso
-
-Herramienta de fans, gratuita y sin ánimo de lucro. No está afiliada a Ubisoft ni a Massive Entertainment.
-The Division es una marca registrada de Ubisoft.
+Free, non-profit fan tool. Not affiliated with Ubisoft or Massive Entertainment.
+The Division is a registered trademark of Ubisoft.
