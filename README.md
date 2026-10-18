@@ -3,7 +3,8 @@
 Offline Android app for The Division 2 players: log the gear and weapons that drop for you and see the odds of
 getting the roll you want once a specific item drops.
 
-- **Log drop** in 4 steps that unlock in order: type & set → slot → rarity (High End / Named) → attributes & talent.
+- **Log drop** in 4 steps that unlock in order: type → slot (and, for gear, the Brand or Gear Set) → rarity
+  (High End / Named) → attributes & talent. Changing an earlier choice clears the ones after it.
   Named items lock their unique attribute or perfect talent; Gear Set chests and backpacks lock the set talent.
 - **Odds**: pick an item (steps 1–3) and the roll you want (step 4). The app estimates the chance of that roll
   *once that item drops*, from your own drops, separately for each core attribute.

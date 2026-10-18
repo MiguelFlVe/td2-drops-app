@@ -664,12 +664,12 @@ function itemSub(s){
   return CAT_LABEL[s.cat] + (s.cat === 'brand' ? ' · High End' : '');
 }
 
-/* ================= Shared steps 1-3 (type/set → slot → rarity) ================= */
-const SEL_ORDER = ['cat', 'set', 'slot', 'rarity', 'named'];
+/* ================= Shared steps 1-3 (type → slot → set → rarity) ================= */
+const SEL_ORDER = ['cat', 'slot', 'set', 'rarity', 'named'];
 const blankSel = () => ({cat:null, set:null, slot:null, rarity:null, named:null});
 function stepDone(sel, k){
-  if (k === 1) return !!sel.cat && (sel.cat === 'weapon' || !!sel.set);
-  if (k === 2) return stepDone(sel, 1) && !!sel.slot;
+  if (k === 1) return !!sel.cat;
+  if (k === 2) return stepDone(sel, 1) && !!sel.slot && (sel.cat === 'weapon' || !!sel.set);
   if (k === 3) return stepDone(sel, 2) && (sel.cat === 'gear' || sel.rarity === HE || (sel.rarity === NAMED && !!sel.named));
   return false;
 }
@@ -678,7 +678,7 @@ function applySel(sel, key, v){
   if (sel[key] === v) return false;
   sel[key] = v;
   for (let j = SEL_ORDER.indexOf(key) + 1; j < SEL_ORDER.length; j++) sel[SEL_ORDER[j]] = null;
-  if (sel.cat === 'gear' && sel.slot) sel.rarity = GS;
+  if (sel.cat === 'gear' && sel.slot && sel.set) sel.rarity = GS;
   if (sel.rarity === NAMED && !sel.named){ const o = namedOptions(sel); if (o.length === 1) sel.named = o[0].n; }
   return true;
 }
@@ -727,18 +727,18 @@ function stepCard(n, title, state, summary, body, hint){
 function itemSteps(sel, onChange){
   const out = [];
   const d1 = stepDone(sel, 1), d2 = stepDone(sel, 2), d3 = stepDone(sel, 3);
-  // Step 1: type (+ set)
-  const b1 = h('div', {}, seg(CATS.map(c => ({v:c, label:CAT_LABEL[c]})), sel.cat, v => onChange('cat', v)));
-  if (sel.cat === 'brand' || sel.cat === 'gear'){
-    b1.append(h('div', {class:'sub-lbl'}, sel.cat === 'gear' ? 'Which Gear Set?' : 'Which brand?'),
-      selectBox(setList(sel.cat), sel.set, v => onChange('set', v || null), sel.cat === 'gear' ? '— Choose the Gear Set —' : '— Choose the brand —'));
+  const isW = sel.cat === 'weapon', setWord = sel.cat === 'gear' ? 'Gear Set' : 'brand';
+  // Step 1: type
+  const b1 = seg(CATS.map(c => ({v:c, label:CAT_LABEL[c]})), sel.cat, v => onChange('cat', v));
+  out.push(stepCard(1, 'Type', d1 ? 'done' : 'open', d1 ? CAT_LABEL[sel.cat] : '', b1));
+  // Step 2: slot / weapon type, then (gear) the set
+  const b2 = h('div', {}, chips((isW ? WEAPON_TYPES : GEAR_SLOTS).map(s => opt(s)), sel.slot, v => onChange('slot', v), isW ? 2 : 3));
+  if (!isW && sel.slot){
+    b2.append(h('div', {class:'sub-lbl'}, 'Which ' + setWord + '?'),
+      selectBox(setList(sel.cat), sel.set, v => onChange('set', v || null), '— Choose the ' + setWord + ' —'));
   }
-  out.push(stepCard(1, sel.cat === 'weapon' ? 'Type' : 'Type & set', d1 ? 'done' : 'open', d1 ? (sel.set || CAT_LABEL[sel.cat]) : '', b1));
-  // Step 2: slot / weapon type
-  const slots = sel.cat === 'weapon' ? WEAPON_TYPES : GEAR_SLOTS;
-  const b2 = chips(slots.map(s => opt(s)), sel.slot, v => onChange('slot', v), sel.cat === 'weapon' ? 2 : 3);
-  out.push(stepCard(2, sel.cat === 'weapon' ? 'Weapon type' : 'Slot', !d1 ? 'locked' : d2 ? 'done' : 'open', d2 ? sel.slot : '', b2,
-    !sel.cat ? 'Choose the type first.' : 'Choose the ' + (sel.cat === 'gear' ? 'Gear Set' : 'brand') + ' first.'));
+  out.push(stepCard(2, isW ? 'Weapon type' : 'Slot & set', !d1 ? 'locked' : d2 ? 'done' : 'open', d2 ? (isW ? sel.slot : sel.slot + ' · ' + sel.set) : '', b2,
+    'Choose the type first.'));
   // Step 3: rarity
   let b3;
   if (sel.cat === 'gear') b3 = h('div', {class:'note'}, 'Gear Set pieces have a single rarity.');
@@ -759,7 +759,8 @@ function itemSteps(sel, onChange){
     }
   }
   const sum3 = !d3 ? '' : sel.cat === 'gear' ? GS : sel.rarity === NAMED ? sel.named : HE;
-  out.push(stepCard(3, 'Rarity', !d2 ? 'locked' : d3 ? 'done' : 'open', sum3, b3, 'Choose the ' + (sel.cat === 'weapon' ? 'weapon type' : 'slot') + ' first.'));
+  out.push(stepCard(3, 'Rarity', !d2 ? 'locked' : d3 ? 'done' : 'open', sum3, b3,
+    'Choose the ' + (!sel.cat ? 'type' : isW ? 'weapon type' : !sel.slot ? 'slot' : setWord) + ' first.'));
   return out;
 }
 
@@ -800,8 +801,8 @@ const R = {sel: blankSel(), core: null, attrs: [], talent: null, note: ''};
 function resetRoll(o, any){ o.core = any ? ANY : null; o.attrs = []; o.talent = any ? ANY : null; }
 
 function logMissing(){
-  if (!stepDone(R.sel, 1)) return [R.sel.cat ? (R.sel.cat === 'gear' ? 'Gear Set' : 'brand') : 'type'];
-  if (!stepDone(R.sel, 2)) return [R.sel.cat === 'weapon' ? 'weapon type' : 'slot'];
+  if (!stepDone(R.sel, 1)) return ['type'];
+  if (!stepDone(R.sel, 2)) return [R.sel.cat === 'weapon' ? 'weapon type' : !R.sel.slot ? 'slot' : R.sel.cat === 'gear' ? 'Gear Set' : 'brand'];
   if (!stepDone(R.sel, 3)) return [R.sel.rarity === NAMED ? 'Named item' : 'rarity'];
   const info = itemInfo(R.sel), m = [];
   if (info.hasCore && !R.core) m.push('core attribute');
@@ -1073,7 +1074,7 @@ function renderOddsResults(){
     h('details', {},
       h('summary', {}, 'How is it calculated?'),
       h('ul', {},
-        h('li', {}, 'The odds assume this exact item already dropped (type, set, slot and rarity from steps 1–3) and estimate how likely the roll you picked is.'),
+        h('li', {}, 'The odds assume this exact item already dropped (type, slot, set and rarity from steps 1–3) and estimate how likely the roll you picked is.'),
         h('li', {}, 'Each part is estimated in layers: first your drops of this exact item; when there are few, it fills in with similar drops (same set, then same type, then all gear or all weapons), and finally with equal odds for every option. Formula: (times seen + K × wider estimate) ÷ (drops + K), where K is the number of options. Each drop counts only once, in the narrowest group it belongs to.'),
         h('li', {}, 'Gear: the core is estimated per item; attributes and talent are estimated separately for each core.'),
         h('li', {}, 'Brand items roll 2 different attributes (drawn without repeats). Gear Set pieces, weapons and Named gear outside the chest and backpack roll 1.'),
