@@ -66,6 +66,14 @@ stable signature (updates install over the previous version). Without it, each b
 3. **Build → Build App Bundle(s) / APK(s) → Build APK(s)**.
 4. The APK is in `app/build/outputs/apk/`.
 
+## Tests and checks
+
+- `python3 tests/run_all.py` runs the browser tests (Playwright + Chromium) against `app/src/main/assets/index.html`:
+  the 4-step flow, the odds (checked against an independent Python implementation), migration of old files, the
+  native file bridge (mocked), catalog editing and base data.
+- `python3 tools/apk_signature.py drops-td2.apk` and `python3 tools/apk_manifest.py drops-td2.apk` check a built
+  APK's signature, certificate and version.
+
 ## Install on your phone
 
 1. Download the APK on your phone and open it.
