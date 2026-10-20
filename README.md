@@ -39,6 +39,11 @@ the chest and backpack roll 1.
 and no minor attributes, so it has nothing to roll: Log drop saves it without a core or attributes, and Odds shows it
 as a fixed roll. Its drops aren't used to estimate other items' cores or attributes.
 
+**Exception:** First Sight (Named assault rifle) has no unique talent: its perk only changes the weapon's base stats
+(+30% Headshot Damage, -50% Reload Speed). Nothing is locked, so it rolls an attribute and a talent like a High End
+assault rifle, and its talents also count toward the High End weapon talent estimate. First Sight drops logged before
+2.1.2 have no talent recorded: they still count for attributes, but not when you ask for a talent.
+
 ## Base data
 
 `app/src/main/assets/base-data.js` can bundle drops with the app (for example, a whole season).
@@ -79,7 +84,7 @@ stable signature (updates install over the previous version). Without it, each b
 
 - `python3 tests/run_all.py` runs the browser tests (Playwright + Chromium) against `app/src/main/assets/index.html`:
   the 4-step flow, the odds (checked against an independent Python implementation), migration of old files, the
-  native file bridge (mocked), catalog editing, base data and the Core Strength backpack exception.
+  native file bridge (mocked), catalog editing, base data and the Core Strength backpack and First Sight exceptions.
 - `python3 tools/apk_signature.py drops-td2.apk` and `python3 tools/apk_manifest.py drops-td2.apk` check a built
   APK's signature, certificate and version.
 

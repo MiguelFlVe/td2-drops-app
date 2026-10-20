@@ -235,6 +235,10 @@ const COLOR = {
    (the Core Strength backpack), so there's nothing left to roll. */
 const ALL_CORES_ITEMS = [{cat:'gear', set:'Core Strength', slot:'Backpack'}];
 const allCoresItem = s => !!s && ALL_CORES_ITEMS.some(x => x.cat === s.cat && x.set === s.set && x.slot === s.slot);
+/* Named weapons whose perk only changes the weapon's base stats (First Sight: +30% Headshot Damage, -50% Reload Speed).
+   Nothing is locked on them: they roll an attribute and a talent like a High End weapon of their type. */
+const STAT_ONLY_NAMED = [{cat:'weapon', slot:'Assault Rifle', named:'First Sight'}];
+const statOnlyNamed = s => !!s && s.rarity === NAMED && STAT_ONLY_NAMED.some(x => x.cat === s.cat && x.slot === s.slot && x.named === s.named);
 const T_ABBR = {AR:'Assault Rifle', LMG:'Light Machine Gun', MMR:'Marksman Rifle', RIF:'Rifle', SG:'Shotgun', SMG:'Submachine Gun', PIS:'Pistol'};
 const WT = (n, types) => ({n, w: types ? types.split(',').map(x => T_ABBR[x.trim()]) : WEAPON_TYPES.slice()});
 const NG = s => { const [n, set, slot, perk] = s.split('|'); return {n, set, slot, perk}; };
@@ -653,10 +657,11 @@ function itemInfo(sel){
   const named = findNamed(sel);
   if (sel.cat === 'weapon'){
     const wc = WEAPON_CORE[sel.slot] || {core1: sel.slot + ' Damage', core2: null};
+    const statOnly = !!named && statOnlyNamed(sel), locked = !!named && !statOnly;
     return {hasCore: false, core1: wc.core1, core2: wc.core2, attrSlots: 1,
       attrPool: C().weaponAttrs.filter(a => a !== wc.core2),
-      talentPool: named ? [] : weaponTalentPool(sel.slot),
-      lockedTalent: named ? named.perk : null, lockedAttr: null, named};
+      talentPool: locked ? [] : weaponTalentPool(sel.slot),
+      lockedTalent: locked ? named.perk : null, lockedAttr: null, statPerk: statOnly ? named.perk : null, named};
   }
   const talentSlot = TALENT_SLOTS.includes(sel.slot);
   const base = {hasCore: true, attrPool: C().gearAttrs.slice(), named, lockedAttr: null, lockedTalent: null, talentPool: []};
@@ -843,6 +848,7 @@ function rollFields(o, info, isOdds, rerender){
     out.push(field('Core attribute', chips((isOdds ? [anyOpt] : []).concat(CORES.map(c => opt(c))), o.core, v => { o.core = v; rerender(); }, isOdds ? 2 : 3),
       isOdds ? 'calculated separately' : null));
   }
+  if (info.statPerk) out.push(field('Base stats', perkBox('Always on this Named item', info.statPerk), 'attribute and talent roll freely'));
   if (info.lockedAttr) out.push(field('Unique attribute', perkBox('Always on this Named item', info.lockedAttr)));
   const lim = info.attrSlots;
   out.push(field(lim === 2 ? 'Attributes' : 'Attribute',
@@ -958,8 +964,10 @@ function weaponAttrLevels(sel, D){
   const k = itemKey(sel);
   return rings(D, [d => itemKey(d) === k, d => d.cat === 'weapon' && d.slot === sel.slot, d => d.cat === 'weapon'], d => d.attrs);
 }
+/* Weapon talents: this item, then every weapon whose talent rolls at random (High End and the Named in STAT_ONLY_NAMED).
+   Drops without a recorded talent (First Sight logged before 2.1.2) are left out. */
 function weaponTalentLevels(sel, D){
-  const k = itemKey(sel), w = d => d.cat === 'weapon' && d.rarity === HE && !!d.talent;
+  const k = itemKey(sel), w = d => d.cat === 'weapon' && (d.rarity === HE || statOnlyNamed(d)) && !!d.talent;
   return rings(D, [d => w(d) && itemKey(d) === k, w], d => d.talent);
 }
 /* Main calculation. Returns {p, parts:[{core, pc, pa, pt, p}]} (one part per core; weapons have a single part) */
@@ -1035,7 +1043,11 @@ function renderOddsResults(){
   const p = r.p, pT = rT.p;
   if (!(p > 0)){ box.append(card('Result', h('p', {class:'muted', style:'margin:0'}, 'That roll can’t drop on this item.'))); return; }
   const allItem = all.filter(d => itemKey(d) === k), ownItem = own.filter(d => itemKey(d) === k);
-  const ownHits = ownItem.filter(d => matchesRoll(d, want)).length;
+  // When a talent is asked for, drops with no recorded talent (First Sight logged before 2.1.2) can't be judged:
+  // they're left out of your-drop counts and the talent row (their attribute still counts).
+  const needTalent = want.talent !== ANY && info.talentPool.length > 0, hasT = d => !needTalent || !!d.talent;
+  const ownJ = ownItem.filter(hasT), noTalent = ownItem.length - ownJ.length;
+  const ownHits = ownJ.filter(d => matchesRoll(d, want)).length;
   const name = itemName(sel);
 
   // Main result
@@ -1057,8 +1069,8 @@ function renderOddsResults(){
     const list = h('div', {class:'corelist'});
     for (const core of CORES){
       const rc = odds(sel, Object.assign({}, want, {core}), all), part = rc.parts[0];
-      const youN = ownItem.filter(d => d.core === core).length;
-      const youK = ownItem.filter(d => matchesRoll(d, Object.assign({}, want, {core}))).length;
+      const youN = ownJ.filter(d => d.core === core).length;
+      const youK = ownJ.filter(d => matchesRoll(d, Object.assign({}, want, {core}))).length;
       const on = Q.core === core;
       list.append(h('button', {type:'button', class:'corerow', 'aria-pressed': on ? 'true' : 'false',
         onclick: () => { Q.core = on ? ANY : core; renderOdds(); }},
@@ -1070,12 +1082,15 @@ function renderOddsResults(){
   }
 
   // Your drops of this item
-  const atLeast = 1 - Math.pow(1 - p, ownItem.length);
+  const atLeast = 1 - Math.pow(1 - p, ownJ.length);
   box.append(card('Your drops of this item',
-    kv('Drops of this item', fmtInt(ownItem.length)),
-    kv('With this roll', fmtInt(ownHits), ownItem.length ? fmtPct(ownHits / ownItem.length) + ' of them' : null),
-    kv('Expected with ' + plural(ownItem.length, 'drop'), fmtNum(ownItem.length * p, 2) + ' times'),
-    kv('Chance of having it by now', fmtPct(atLeast))));
+    kv('Drops of this item', fmtInt(ownJ.length)),
+    kv('With this roll', fmtInt(ownHits), ownJ.length ? fmtPct(ownHits / ownJ.length) + ' of them' : null),
+    kv('Expected with ' + plural(ownJ.length, 'drop'), fmtNum(ownJ.length * p, 2) + ' times'),
+    kv('Chance of having it by now', fmtPct(atLeast)),
+    noTalent ? h('div', {class:'small muted', style:'margin-top:8px'},
+      plural(noTalent, 'other drop') + ' of this item ' + (noTalent === 1 ? 'has' : 'have') + ' no talent recorded (logged before the talent could be picked), so ' +
+      (noTalent === 1 ? 'it isn’t' : 'they aren’t') + ' counted here.') : null));
 
   // How many more
   const out = h('span', {class:'v'});
@@ -1102,7 +1117,7 @@ function renderOddsResults(){
     if (info.hasCore) row('Core', want.core, part.pc, partT.pc, itemC.length, itemD.length);
     if (want.attrs.length) row(want.attrs.length > 1 ? 'Attributes' : 'Attribute', want.attrs.join(' + '), part.pa, partT.pa,
       itemC.filter(d => want.attrs.every(a => (d.attrs || []).includes(a))).length, itemC.length);
-    if (want.talent !== ANY) row('Talent', want.talent, part.pt, partT.pt, itemC.filter(d => d.talent === want.talent).length, itemC.length);
+    if (want.talent !== ANY) row('Talent', want.talent, part.pt, partT.pt, itemC.filter(d => d.talent === want.talent).length, itemC.filter(hasT).length);
   }
   tb.append(h('tr', {class:'total'}, h('td', {}, 'Total'), h('td', {class:'num'}, fmtPct(p)), h('td', {class:'num'}, fmtPct(pT))));
   box.append(card('Breakdown',
@@ -1117,6 +1132,7 @@ function renderOddsResults(){
         h('li', {}, 'Gear: the core is estimated per item; attributes and talent are estimated separately for each core.'),
         h('li', {}, 'Brand items roll 2 different attributes (drawn without repeats). Gear Set pieces, weapons and Named gear outside the chest and backpack roll 1.'),
         h('li', {}, 'Named items always come with their unique attribute or perfect talent, so it never counts against you. Gear Set chests and backpacks always have the set talent.'),
+        h('li', {}, 'Exception: ' + STAT_ONLY_NAMED.map(x => x.named).join(', ') + ' only changes the weapon’s base stats, so it rolls an attribute and a talent like a High End weapon of its type. Its talents also count toward the High End weapon talent estimate.'),
         h('li', {}, 'Exception: the Core Strength backpack always has all three core attributes and no minor attributes, so it rolls the same every time. Its drops aren’t used to estimate other items’ cores or attributes.'),
         h('li', {}, 'Parts are multiplied, assuming each one rolls independently. Targeted loot and the activity can change real odds, so logging drops from the same source keeps comparisons fair.')))));
 }
