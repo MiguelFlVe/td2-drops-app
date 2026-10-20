@@ -12,7 +12,7 @@ import functools, http.server, os, pathlib, shutil, subprocess, sys, tempfile, t
 
 HERE = pathlib.Path(__file__).resolve().parent
 ASSETS = HERE.parent / 'app' / 'src' / 'main' / 'assets'
-TESTS = ['test_flow.py', 'test_odds.py', 'test_misc.py', 'test_base.py']
+TESTS = ['test_flow.py', 'test_odds.py', 'test_misc.py', 'test_base.py', 'test_core_strength.py']
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a): pass
@@ -38,7 +38,7 @@ def main():
         page_errors = [l for l in out if l.startswith('ERRORS') and l.strip() != 'ERRORS []']
         bad = failed + page_errors + ([r.stderr.strip()] if r.returncode else [])
         total_pass += passed; total_fail += len(bad)
-        print(f'{t:16s} {passed:3d} passed' + (f', {len(bad)} problem(s)' if bad else ''))
+        print(f'{t:22s} {passed:3d} passed' + (f', {len(bad)} problem(s)' if bad else ''))
         for l in bad: print('    ' + l)
     shutil.rmtree(base_dir, ignore_errors=True)
     print(f'TOTAL: {total_pass} passed, {total_fail} problem(s)')

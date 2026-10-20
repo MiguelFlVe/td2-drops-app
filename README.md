@@ -35,6 +35,10 @@ exact item, it approaches what you actually got. Groups used:
 Brand items roll 2 distinct attributes (drawn without repeats); Gear Set pieces, weapons and Named gear outside
 the chest and backpack roll 1.
 
+**Exception:** the Core Strength backpack always has all three core attributes (Weapon Damage, Armor and Skill Tier)
+and no minor attributes, so it has nothing to roll: Log drop saves it without a core or attributes, and Odds shows it
+as a fixed roll. Its drops aren't used to estimate other items' cores or attributes.
+
 ## Base data
 
 `app/src/main/assets/base-data.js` can bundle drops with the app (for example, a whole season).
@@ -56,6 +60,11 @@ The script removes each drop's note and date, because this repository is public.
 Every push to `main` runs `.github/workflows/build.yml`, publishes `drops-td2.apk` as an artifact and as a
 **Release** (download it on your phone from `https://github.com/MiguelFlVe/td2-drops-app/releases/latest`).
 
+- The version name comes from the `VERSION` file (for example `2.1.1`). Bump it in every release commit: the build
+  stops if a release with that version already exists. The version code is the run number, so it always goes up.
+- The release notes start with `RELEASE_NOTES.md` (what's new in this version).
+- Commits that don't change the app (docs, tests, data) add `[skip ci]` to the message.
+
 The signing key is stored encrypted in `app/release.jks.enc`. Add the Actions secret `SIGNING_PASSWORD` for a
 stable signature (updates install over the previous version). Without it, each build uses a different debug key.
 
@@ -70,7 +79,7 @@ stable signature (updates install over the previous version). Without it, each b
 
 - `python3 tests/run_all.py` runs the browser tests (Playwright + Chromium) against `app/src/main/assets/index.html`:
   the 4-step flow, the odds (checked against an independent Python implementation), migration of old files, the
-  native file bridge (mocked), catalog editing and base data.
+  native file bridge (mocked), catalog editing, base data and the Core Strength backpack exception.
 - `python3 tools/apk_signature.py drops-td2.apk` and `python3 tools/apk_manifest.py drops-td2.apk` check a built
   APK's signature, certificate and version.
 

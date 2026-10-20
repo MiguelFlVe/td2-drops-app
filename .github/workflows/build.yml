@@ -32,6 +32,19 @@ jobs:
             echo "No SIGNING_PASSWORD: using a debug key"
           fi
 
+      # The version name comes from the VERSION file (bump it in every release commit).
+      # The version code is the run number, so it always goes up and updates install over the old version.
+      - name: Check version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="$(tr -d ' \r\n' < VERSION)"
+          if [ -z "$V" ]; then echo "::error::The VERSION file is empty."; exit 1; fi
+          if gh api "repos/${{ github.repository }}/releases/tags/v$V" > /dev/null 2>&1; then
+            echo "::error::Release v$V already exists. Bump the VERSION file."; exit 1
+          fi
+          echo "VERSION_NAME=$V" >> "$GITHUB_ENV"
+
       - name: Build
         env:
           KEYSTORE_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
@@ -39,8 +52,6 @@ jobs:
           KEY_ALIAS: td2drops
           VERSION_CODE: ${{ github.run_number }}
         run: |
-          export VERSION_NAME="2.$(( ${{ github.run_number }} - 8 ))"
-          echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
           chmod +x gradlew
           ./gradlew --no-daemon --stacktrace assembleRelease
           mkdir -p out
@@ -57,10 +68,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="v$VERSION_NAME"
+          { [ -f RELEASE_NOTES.md ] && cat RELEASE_NOTES.md && echo
+            echo "Download **drops-td2.apk** on your Android phone and open it to install. Free, non-profit fan tool; not affiliated with Ubisoft or Massive Entertainment."
+          } > /tmp/notes.md
           gh release create "$TAG" out/drops-td2.apk \
             --repo "${{ github.repository }}" \
             --title "Drops TD2 $VERSION_NAME" \
-            --notes "Download **drops-td2.apk** on your Android phone and open it to install. Free, non-profit fan tool; not affiliated with Ubisoft or Massive Entertainment." \
+            --notes-file /tmp/notes.md \
             --latest
 
       - name: Save APK to the apk branch
