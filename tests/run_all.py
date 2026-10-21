@@ -12,7 +12,7 @@ import functools, http.server, os, pathlib, shutil, subprocess, sys, tempfile, t
 
 HERE = pathlib.Path(__file__).resolve().parent
 ASSETS = HERE.parent / 'app' / 'src' / 'main' / 'assets'
-TESTS = ['test_flow.py', 'test_odds.py', 'test_misc.py', 'test_base.py', 'test_core_strength.py', 'test_first_sight.py']
+TESTS = ['test_flow.py', 'test_odds.py', 'test_misc.py', 'test_base.py', 'test_core_strength.py', 'test_first_sight.py', 'test_sheet_data.py']
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a): pass

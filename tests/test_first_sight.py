@@ -28,7 +28,7 @@ with sync_playwright() as p:
     step(2).locator('select').select_option('First Sight')
     st4=step(3)
     ok(PERK in st4.locator('.perk').inner_text() and 'base stats' in st4.inner_text().lower(), 'First Sight: base-stat perk shown as fixed')
-    ok(st4.locator('.chip').count()==5 and st4.locator('.chip', has_text='Damage to Health').count()==0, 'First Sight: 5 attribute chips (core 2 excluded)')
+    ok(st4.locator('.chip').count()==12 and st4.locator('.chip', has_text='Damage to Health').count()==0, 'First Sight: 12 attribute chips (core 2 excluded)')
     tal=st4.locator('select')
     n_ar=pg.evaluate("[...document.querySelectorAll('#log .step')[3].querySelectorAll('select option')].length")-1
     ok(tal.count()==1 and n_ar>20 and tal.locator('option', has_text='Near Sighted').count()==1 and tal.locator('option', has_text='Salvage').count()==0,

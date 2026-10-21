@@ -132,6 +132,7 @@ details ul{padding-left:18px;margin:6px 0}
 .tag .dot{width:7px;height:7px;border-radius:50%}
 .tag.talent{border-color:var(--accent);color:var(--accent)}
 .tag.perk-tag{border-color:var(--gold);color:var(--gold)}
+.tag.warn-tag{border-color:var(--danger);color:var(--danger);font-weight:700}
 .tag.rar{font-weight:700}
 .icon-btn{width:36px;height:36px;flex:none;border-radius:10px;border:1px solid var(--border);background:var(--surface2);display:grid;place-items:center;font-size:18px;line-height:1;color:var(--muted)}
 .wt-row{border-top:1px solid var(--border);padding:10px 0}
@@ -239,13 +240,43 @@ const allCoresItem = s => !!s && ALL_CORES_ITEMS.some(x => x.cat === s.cat && x.
    Nothing is locked on them: they roll an attribute and a talent like a High End weapon of their type. */
 const STAT_ONLY_NAMED = [{cat:'weapon', slot:'Assault Rifle', named:'First Sight'}];
 const statOnlyNamed = s => !!s && s.rarity === NAMED && STAT_ONLY_NAMED.some(x => x.cat === s.cat && x.slot === s.slot && x.named === s.named);
+/* Named gear that doesn't follow the usual "unique attribute + 1 attribute" roll (source: Division 2 Gear Spreadsheet).
+   fixed: attributes that always come already rolled (nothing left to pick); exclude: attributes the free one can't be. */
+const NAMED_GEAR_ROLLS = [
+  {named:'Turmoil', set:'Česká Výroba s.r.o.', fixed:['Critical Hit Damage', 'Critical Hit Chance']},
+  {named:'Punch Drunk', set:'Douglas & Harding', exclude:['Headshot Damage']},
+  {named:"Eagle's Grasp", set:'Zwiadowka Sp. z o.o.', exclude:['Weapon Handling']},
+  {named:'Firm Handshake', set:'Sokolov Concern', exclude:['Status Effects']}
+];
+const namedRule = s => !!s && s.cat === 'brand' && s.rarity === NAMED && NAMED_GEAR_ROLLS.find(x => x.named === s.named && x.set === s.set) || null;
 const T_ABBR = {AR:'Assault Rifle', LMG:'Light Machine Gun', MMR:'Marksman Rifle', RIF:'Rifle', SG:'Shotgun', SMG:'Submachine Gun', PIS:'Pistol'};
 const WT = (n, types) => ({n, w: types ? types.split(',').map(x => T_ABBR[x.trim()]) : WEAPON_TYPES.slice()});
 const NG = s => { const [n, set, slot, perk] = s.split('|'); return {n, set, slot, perk}; };
 const NW = s => { const [n, type, perk, base] = s.split('|'); return {n, type: T_ABBR[type] || type, perk, base: base || ''}; };
 
+/* Native core attribute of every brand and Gear Set (source: Division 2 Gear Spreadsheet). Their items always drop with it.
+   Sets left out roll a random core: Core Strength (all pieces but the backpack) and Refactor (two cores split by slot,
+   not confirmed which). System Corruption splits its core by slot. */
+const coreMap = (groups) => { const m = {}; for (const core in groups) for (const n of groups[core]) m[n] = core; return m; };
+const DEFAULT_BRAND_CORES = coreMap({
+  'Armor': ['5.11 Tactical','Badger Tuff','Belstone Armory','Brazos de Arcabuz','Gila Guard','Golan Gear Ltd','Habsburg Guard',
+    'Lengmo','Palisade Steelworks','Uzina Getica','Yaahl Gear'],
+  'Skill Tier': ['Alps Summit Armament','China Light Industries Corporation','Edelweiss GPz','Electrique','Empress International',
+    'Hana-U Corporation','Murakami Industries','Richter & Kaiser GmbH','Shiny Monkey Gear','Wyvern Wear'],
+  'Weapon Damage': ['Airaldi Holdings','Česká Výroba s.r.o.','Douglas & Harding','Fenris Group AB','Grupo Sombra S.A.',
+    'Imminence Armaments','Legatus S.p.A.','Overlord Armaments','Petrov Defense Group','Providence Defense','Royal Works',
+    'Sokolov Concern','Unit Alloys','Urban Lookout','Walker, Harris & Co.','Zwiadowka Sp. z o.o.']
+});
+const DEFAULT_SET_CORES = Object.assign(coreMap({
+  'Armor': ['Aegis','Cavalier','Foundry Bulwark','Heartbreaker','True Patriot'],
+  'Skill Tier': ['Eclipse Protocol','Ember Engine','Future Initiative','Hard Wired','Measured Assembly','Ortiz: Exuro','Ortiz: Reficere','Rigger'],
+  'Weapon Damage': ['Aces & Eights','Breaking Point','Concentrated Company','Hotshot',"Hunter's Fury","Negotiator's Dilemma",
+    'Ongoing Directive',"Striker's Battlegear",'Tip of the Spear','Tipping Scales','Umbra Initiative','Virtuoso']
+}), {'System Corruption': {Mask:'Weapon Damage', Gloves:'Weapon Damage', Holster:'Weapon Damage', Chest:'Armor', Backpack:'Armor', Kneepads:'Armor'}});
+
+const CATALOG_V = 4;
 const DEFAULT_CATALOG = {
-  v: 3,
+  v: CATALOG_V,
   brands: ['5.11 Tactical','Airaldi Holdings','Alps Summit Armament','Badger Tuff','Belstone Armory','Brazos de Arcabuz',
     'Česká Výroba s.r.o.','China Light Industries Corporation','Douglas & Harding','Edelweiss GPz','Electrique',
     'Empress International','Fenris Group AB','Gila Guard','Golan Gear Ltd','Grupo Sombra S.A.','Habsburg Guard',
@@ -253,14 +284,17 @@ const DEFAULT_CATALOG = {
     'Palisade Steelworks','Petrov Defense Group','Providence Defense','Richter & Kaiser GmbH','Royal Works',
     'Shiny Monkey Gear','Sokolov Concern','Unit Alloys','Urban Lookout','Uzina Getica','Walker, Harris & Co.',
     'Wyvern Wear','Yaahl Gear','Zwiadowka Sp. z o.o.'],
+  brandCores: DEFAULT_BRAND_CORES,
   gearSets: ['Aces & Eights','Aegis','Breaking Point','Cavalier','Concentrated Company','Core Strength','Eclipse Protocol',
     'Ember Engine','Foundry Bulwark','Future Initiative','Hard Wired','Heartbreaker','Hotshot',"Hunter's Fury",
     'Measured Assembly',"Negotiator's Dilemma",'Ongoing Directive','Ortiz: Exuro','Ortiz: Reficere','Refactor','Rigger',
     "Striker's Battlegear",'System Corruption','Tip of the Spear','Tipping Scales','True Patriot','Umbra Initiative','Virtuoso'],
+  setCores: DEFAULT_SET_CORES,
   gearAttrs: ['Critical Hit Chance','Critical Hit Damage','Headshot Damage','Weapon Handling',
     'Armor Regeneration','Hazard Protection','Health','Explosive Resistance',
     'Skill Damage','Skill Haste','Repair Skills','Status Effects'],
-  weaponAttrs: ['Critical Hit Chance','Critical Hit Damage','Headshot Damage','Damage to Armor','Damage to Health','Damage to Targets Out of Cover'],
+  weaponAttrs: ['Accuracy','Critical Hit Chance','Critical Hit Damage','Damage to Armor','Damage to Health','Damage to Targets Out of Cover',
+    'Headshot Damage','Magazine Size','Optimal Range','Rate of Fire','Reload Speed','Stability','Swap Speed'],
   chestTalents: ['Braced','Efficient','Empathic Resolve','Entrench','Explosive Delivery','Focus','Glass Cannon','Gunslinger',
     'Headhunter','Intimidate','Kinetic Momentum','Mad Bomber','Obliterate','Overwatch','Protected Reload','Reassigned',
     'Skilled','Spark','Spotter','Tag Team','Tamper Proof','Trauma','Unbreakable','Vanguard'],
@@ -277,7 +311,7 @@ const DEFAULT_CATALOG = {
     WT('Frenzy', 'LMG'), WT('Lucky Shot', 'MMR,PIS,RIF'), WT('Measured', 'AR,LMG,SMG'), WT('Naked', 'MMR'),
     WT('Near Sighted', 'AR'), WT('On Empty', 'AR'), WT('Outsider', 'SMG'), WT('Overflowing', 'AR'), WT('Overwhelm', 'LMG'),
     WT('Precision Strike', 'AR,LMG,MMR,RIF'), WT('Pummel', 'SG'), WT('Pumped Up', 'SG'), WT('Rifleman', 'RIF'),
-    WT('Salvage', 'PIS'), WT('Stabilize', 'AR,SMG'), WT('Unhinged', 'LMG'), WT('Unwavering', 'SMG')
+    WT('Salvage', 'PIS'), WT('Stabilize', 'AR,LMG,SMG'), WT('Unhinged', 'LMG'), WT('Unwavering', 'SMG')
   ],
   namedGear: [
     "Ammo Dump|Badger Tuff|Holster|Ammo Capacity", "Anarchist's Cookbook|Golan Gear Ltd|Backpack|Perfectly Wicked",
@@ -348,6 +382,7 @@ const DEFAULT_CATALOG = {
     "Purist|SMG|Perfect Streamline|Converted SMG-9 A2", "Safety Distance|SMG|Perfect Outsider|MPX",
     "Slingshot|SMG|+45 Optimal Range|Tactical UMP-45", "Swap Chain|SMG|Perfect Unwavering|MP7",
     "The Apartment|SMG|Perfectly Measured|MPX", "The Grudge|SMG|Perfectly Vindictive|CMMG Banshee",
+    "The Sleigher|SMG|Hidden Rock|Tommy Gun",
     // Light Machine Guns
     "Bellringer|LMG|Unique talent|Infantry MG5", "Big Show|LMG|Perfect Thunder Strike|MG5", "Black Friday|LMG|Perfectly Unhinged|M249",
     "Carnage|LMG|Perfect Sadist|Negev", "Cricket|LMG|Perfect Precision Strike|GR9", "Dare|LMG|Perfect Flatline|GR9",
@@ -467,11 +502,29 @@ const KEY = 'td2-drop-tracker-v1';
 const S = {drops: [], catalog: clone(DEFAULT_CATALOG), backupTs: 0, useBase: true};
 let storageOK = true;
 
+/* A core map keeps only valid entries: name -> core, or (Gear Sets) name -> {slot: core} for sets split by slot. */
+function cleanCores(m, bySlot){
+  const out = {};
+  if (!m || typeof m !== 'object') return out;
+  for (const k in m){
+    const v = m[k];
+    if (CORES.includes(v)) out[k] = v;
+    else if (bySlot && v && typeof v === 'object'){
+      const s = {}; for (const slot of GEAR_SLOTS) if (CORES.includes(v[slot])) s[slot] = v[slot];
+      if (Object.keys(s).length) out[k] = s;
+    }
+  }
+  return out;
+}
+/* Catalog v3 (2.0–2.1.x) and v4 (2.2+) are kept; anything older (Spanish) is replaced by the defaults.
+   A v3 catalog is upgraded by adding what 2.2 brought from the Division 2 Gear Spreadsheet (native cores, the 13 weapon
+   attributes, talent types, new Named items) while keeping everything you added or edited. */
 function normalizeCatalog(c){
   const d = clone(DEFAULT_CATALOG);
-  if (!c || typeof c !== 'object' || c.v !== 3) return d;   // older (Spanish) catalogs are replaced
+  if (!c || typeof c !== 'object' || (c.v !== 3 && c.v !== CATALOG_V)) return d;
   const list = k => cleanList(c[k]) || d[k];
-  const out = {v: 3, brands: list('brands'), gearSets: list('gearSets'), gearAttrs: list('gearAttrs'), weaponAttrs: list('weaponAttrs'),
+  const out = {v: CATALOG_V, brands: list('brands'), brandCores: cleanCores(c.brandCores, false), gearSets: list('gearSets'),
+    setCores: cleanCores(c.setCores, true), gearAttrs: list('gearAttrs'), weaponAttrs: list('weaponAttrs'),
     chestTalents: list('chestTalents'), backpackTalents: list('backpackTalents')};
   out.weaponTalents = Array.isArray(c.weaponTalents)
     ? c.weaponTalents.filter(t => t && typeof t.n === 'string' && t.n.trim()).map(t => ({n: t.n.trim(), w: (Array.isArray(t.w) ? t.w : []).filter(x => WEAPON_TYPES.includes(x))}))
@@ -482,7 +535,21 @@ function normalizeCatalog(c){
   out.namedWeapons = Array.isArray(c.namedWeapons)
     ? c.namedWeapons.filter(x => x && x.n && WEAPON_TYPES.includes(x.type)).map(x => ({n: String(x.n), type: x.type, perk: String(x.perk || 'Unique talent'), base: String(x.base || '')}))
     : d.namedWeapons;
+  if (c.v === 3) upgradeV3(out, d);
   return out;
+}
+function upgradeV3(out, d){
+  for (const k of ['brands', 'gearSets', 'gearAttrs', 'weaponAttrs', 'chestTalents', 'backpackTalents'])
+    for (const x of d[k]) if (!out[k].includes(x)) out[k].push(x);
+  for (const n of out.brands) if (d.brandCores[n]) out.brandCores[n] = d.brandCores[n];
+  for (const n of out.gearSets) if (d.setCores[n]) out.setCores[n] = clone(d.setCores[n]);
+  for (const t of d.weaponTalents){
+    const mine = out.weaponTalents.find(x => x.n === t.n);
+    if (!mine) out.weaponTalents.push(clone(t));
+    else for (const w of t.w) if (!mine.w.includes(w)) mine.w.push(w);
+  }
+  for (const x of d.namedGear) if (!out.namedGear.some(y => y.n === x.n && y.slot === x.slot)) out.namedGear.push(clone(x));
+  for (const x of d.namedWeapons) if (!out.namedWeapons.some(y => y.n === x.n && y.type === x.type)) out.namedWeapons.push(clone(x));
 }
 
 /* Base data: drops bundled with the app (assets/base-data.js). Not shown in History, but used for the odds
@@ -650,6 +717,20 @@ function namedOptions(sel){
   return [];
 }
 function findNamed(sel){ return sel.rarity === NAMED && sel.named ? namedOptions(sel).find(x => x.n === sel.named) || null : null; }
+/* Core attributes a gear item can drop with: just its brand's or set's native core, or all three when it's random. */
+function corePool(s){
+  if (!s || s.cat === 'weapon') return [];
+  const c = s.cat === 'brand' ? C().brandCores[s.set] : C().setCores[s.set];
+  if (typeof c === 'string') return [c];
+  if (c && c[s.slot]) return [c[s.slot]];
+  return CORES.slice();
+}
+/* A drop whose core isn't its item's native one (it can't drop like that: usually a logging slip) */
+function offCore(d){
+  if (!d || d.cat === 'weapon' || !d.core || allCoresItem(d)) return null;
+  const pool = corePool(d);
+  return pool.length === 1 && d.core !== pool[0] ? pool[0] : null;
+}
 function weaponTalentPool(type){ return C().weaponTalents.filter(t => t.w.includes(type)).map(t => t.n).sort(coll); }
 
 /* What can roll on an item (after steps 1-3) */
@@ -661,16 +742,29 @@ function itemInfo(sel){
     return {hasCore: false, core1: wc.core1, core2: wc.core2, attrSlots: 1,
       attrPool: C().weaponAttrs.filter(a => a !== wc.core2),
       talentPool: locked ? [] : weaponTalentPool(sel.slot),
-      lockedTalent: locked ? named.perk : null, lockedAttr: null, statPerk: statOnly ? named.perk : null, named};
+      lockedTalent: locked ? named.perk : null, lockedAttr: null, statPerk: statOnly ? named.perk : null, named,
+      corePool: [], fixedCore: null, fixedAttrs: null, sameRoll: false};
   }
   const talentSlot = TALENT_SLOTS.includes(sel.slot);
-  const base = {hasCore: true, attrPool: C().gearAttrs.slice(), named, lockedAttr: null, lockedTalent: null, talentPool: []};
+  const pool = corePool(sel);
+  const base = {hasCore: true, corePool: pool, fixedCore: pool.length === 1 ? pool[0] : null, coreFrom: sel.cat === 'gear' ? 'Gear Set' : 'brand',
+    attrPool: C().gearAttrs.slice(), named, lockedAttr: null, lockedTalent: null, talentPool: [], fixedAttrs: null};
+  let info;
   if (sel.cat === 'gear' && allCoresItem(sel))
-    return Object.assign(base, {hasCore: false, fixedCores: CORES.slice(), attrSlots: 0, attrPool: [], lockedTalent: 'Gear Set talent (comes with the set)'});
-  if (sel.cat === 'gear') return Object.assign(base, {attrSlots: 1, lockedTalent: talentSlot ? 'Gear Set talent (comes with the set)' : null});
-  if (named) return talentSlot ? Object.assign(base, {attrSlots: 2, lockedTalent: named.perk})
-                               : Object.assign(base, {attrSlots: 1, lockedAttr: named.perk});
-  return Object.assign(base, {attrSlots: 2, talentPool: talentSlot ? (sel.slot === 'Chest' ? C().chestTalents : C().backpackTalents).slice().sort(coll) : []});
+    info = Object.assign(base, {hasCore: false, fixedCores: CORES.slice(), fixedCore: null, corePool: [], attrSlots: 0, attrPool: [], lockedTalent: 'Gear Set talent (comes with the set)'});
+  else if (sel.cat === 'gear') info = Object.assign(base, {attrSlots: 1, lockedTalent: talentSlot ? 'Gear Set talent (comes with the set)' : null});
+  else if (named){
+    const rule = namedRule(sel);
+    if (talentSlot) info = Object.assign(base, {attrSlots: 2, lockedTalent: named.perk});
+    else if (rule && rule.fixed) info = Object.assign(base, {attrSlots: 0, fixedAttrs: rule.fixed.slice(), lockedTalent: named.perk,
+      attrPool: base.attrPool.filter(a => !rule.fixed.includes(a))});
+    else info = Object.assign(base, {attrSlots: 1, lockedAttr: named.perk,
+      attrPool: base.attrPool.filter(a => !(rule && rule.exclude || []).includes(a))});
+  }
+  else info = Object.assign(base, {attrSlots: 2, talentPool: talentSlot ? (sel.slot === 'Chest' ? C().chestTalents : C().backpackTalents).slice().sort(coll) : []});
+  // Nothing left to chance: every drop of this item rolls the same
+  info.sameRoll = !!info.fixedCores || (!!info.fixedCore && info.attrSlots === 0 && !info.talentPool.length);
+  return info;
 }
 const itemKey = s => [s.cat, s.set || '', s.slot || '', s.rarity || '', s.named || ''].join('|');
 function itemName(s){
@@ -825,7 +919,7 @@ function logMissing(){
   if (!stepDone(R.sel, 2)) return [R.sel.cat === 'weapon' ? 'weapon type' : !R.sel.slot ? 'slot' : R.sel.cat === 'gear' ? 'Gear Set' : 'brand'];
   if (!stepDone(R.sel, 3)) return [R.sel.rarity === NAMED ? 'Named item' : 'rarity'];
   const info = itemInfo(R.sel), m = [];
-  if (info.hasCore && !R.core) m.push('core attribute');
+  if (info.hasCore && !info.fixedCore && !R.core) m.push('core attribute');
   if (R.attrs.length !== info.attrSlots) m.push(info.attrSlots === 2 ? '2 attributes' : 'attribute');
   if (info.talentPool.length && !R.talent) m.push('talent');
   return m;
@@ -844,14 +938,21 @@ function rollFields(o, info, isOdds, rerender){
     out.push(field('Core attributes', h('div', {class:'fixed'},
       h('div', {class:'fixed-row'}, h('span', {class:'k'}, 'Core 1'), h('span', {}, info.core1)),
       h('div', {class:'fixed-row'}, h('span', {class:'k'}, 'Core 2'), h('span', {}, info.core2 || 'None on pistols'))), 'fixed for this weapon type'));
+  } else if (info.fixedCore){
+    out.push(field('Core attribute', h('div', {class:'fixed'},
+      h('div', {class:'fixed-row'}, h('span', {class:'fx'}, dot(COLOR[info.fixedCore]), info.fixedCore), h('span', {class:'k'}, 'always'))),
+      'native core of this ' + info.coreFrom));
   } else {
     out.push(field('Core attribute', chips((isOdds ? [anyOpt] : []).concat(CORES.map(c => opt(c))), o.core, v => { o.core = v; rerender(); }, isOdds ? 2 : 3),
-      isOdds ? 'calculated separately' : null));
+      isOdds ? 'random on this item · calculated separately' : 'random on this item'));
   }
   if (info.statPerk) out.push(field('Base stats', perkBox('Always on this Named item', info.statPerk), 'attribute and talent roll freely'));
   if (info.lockedAttr) out.push(field('Unique attribute', perkBox('Always on this Named item', info.lockedAttr)));
+  if (info.fixedAttrs) out.push(field('Attributes', h('div', {class:'fixed'},
+    info.fixedAttrs.map(a => h('div', {class:'fixed-row'}, h('span', {class:'fx'}, dot(COLOR[a]), a), h('span', {class:'k'}, 'always')))),
+    'already rolled on this Named item'));
   const lim = info.attrSlots;
-  out.push(field(lim === 2 ? 'Attributes' : 'Attribute',
+  if (lim) out.push(field(lim === 2 ? 'Attributes' : 'Attribute',
     chips((isOdds ? [anyOpt] : []).concat(info.attrPool.map(a => opt(a))), o.attrs, v => {
       if (v === ANY) o.attrs = []; else toggleMulti(o.attrs, v, lim);
       rerender();
@@ -885,7 +986,7 @@ function saveDrop(){
   const info = itemInfo(R.sel);
   const d = {id: uid(), ts: Date.now(), cat: R.sel.cat, set: R.sel.set || null, slot: R.sel.slot,
     rarity: R.sel.cat === 'gear' ? GS : R.sel.rarity, named: R.sel.rarity === NAMED ? R.sel.named : null,
-    core: info.hasCore ? R.core : null, attrs: R.attrs.slice(), talent: info.talentPool.length ? R.talent : null};
+    core: info.hasCore ? (info.fixedCore || R.core) : null, attrs: info.attrSlots ? R.attrs.slice() : [], talent: info.talentPool.length ? R.talent : null};
   if (R.note.trim()) d.note = R.note.trim();
   S.drops.push(d);
   persist();
@@ -940,12 +1041,14 @@ function attrsProb(slots, want, d){
 function rings(D, preds, getter){
   return preds.map((P, i) => countsOf(D.filter(d => P(d) && !(i && preds[i - 1](d))), getter));
 }
+/* Only items whose core is random say anything about how a random core rolls, so drops of items with a native core
+   (almost all gear) are left out here. */
 function coreLevels(sel, D){
-  const k = itemKey(sel);
-  return rings(D, [d => itemKey(d) === k,
-                   d => d.cat === sel.cat && d.set === sel.set,
-                   d => d.cat === sel.cat,
-                   d => d.cat !== 'weapon'], d => d.core);
+  const k = itemKey(sel), rnd = d => d.cat !== 'weapon' && corePool(d).length > 1;
+  return rings(D, [d => rnd(d) && itemKey(d) === k,
+                   d => rnd(d) && d.cat === sel.cat && d.set === sel.set,
+                   d => rnd(d) && d.cat === sel.cat,
+                   rnd], d => d.core);
 }
 function gearAttrLevels(sel, core, D){
   const k = itemKey(sel);
@@ -973,18 +1076,18 @@ function weaponTalentLevels(sel, D){
 /* Main calculation. Returns {p, parts:[{core, pc, pa, pt, p}]} (one part per core; weapons have a single part) */
 function odds(sel, want, D){
   const info = itemInfo(sel);
-  if (info.fixedCores){   // all three cores, no attributes: the roll is always the same
-    const pf = want.attrs.length ? 0 : 1;
-    return {p: pf, parts: [{core: null, pc: 1, pa: pf, pt: 1, p: pf}]};
+  if (info.sameRoll){   // nothing random (Core Strength backpack, Turmoil): the roll is always the same
+    const pf = want.attrs.length || (want.talent !== ANY) ? 0 : 1;
+    return {p: pf, parts: [{core: info.fixedCore, pc: 1, pa: pf, pt: 1, p: pf}]};
   }
   if (!info.hasCore){
     const pa = attrsProb(1, want.attrs, distOf(info.attrPool, weaponAttrLevels(sel, D)));
     const pt = want.talent === ANY || !info.talentPool.length ? 1 : hier(want.talent, info.talentPool, weaponTalentLevels(sel, D));
     return {p: pa * pt, parts: [{core: null, pc: 1, pa, pt, p: pa * pt}]};
   }
-  const cores = want.core === ANY ? CORES : [want.core];
+  const pool = info.corePool, cores = want.core === ANY ? pool : [want.core];
   const parts = cores.map(core => {
-    const pc = hier(core, CORES, coreLevels(sel, D));
+    const pc = !pool.includes(core) ? 0 : pool.length === 1 ? 1 : hier(core, CORES, coreLevels(sel, D));
     const pa = attrsProb(info.attrSlots, want.attrs, distOf(info.attrPool, gearAttrLevels(sel, core, D)));
     const pt = want.talent === ANY || !info.talentPool.length ? 1 : hier(want.talent, info.talentPool, gearTalentLevels(sel, core, D));
     return {core, pc, pa, pt, p: pc * pa * pt};
@@ -1022,22 +1125,26 @@ function renderOddsResults(){
   const box = $('#odds-results');
   box.replaceChildren();
   if (!stepDone(Q.sel, 3)){ box.append(card(null, h('p', {class:'muted', style:'margin:0'}, 'Pick an item in steps 1–3 to see its odds.'))); return; }
-  const want = {core: Q.core, attrs: Q.attrs.slice(), talent: Q.talent};
   const fixedInfo = itemInfo(Q.sel);
-  if (fixedInfo.fixedCores){
+  const want = {core: fixedInfo.fixedCore || Q.core, attrs: Q.attrs.slice(), talent: Q.talent};
+  if (fixedInfo.sameRoll){
     const fname = itemName(Q.sel), mine = S.drops.filter(d => itemKey(d) === itemKey(Q.sel)).length;
+    const what = fixedInfo.fixedCores
+      ? 'all three core attributes (' + fixedInfo.fixedCores.join(', ') + '), no minor attributes and the Gear Set talent'
+      : fixedInfo.fixedCore + ' as its core, ' + (fixedInfo.fixedAttrs || []).join(' and ') + ' as its attributes and ' + (fixedInfo.lockedTalent || fixedInfo.lockedAttr);
     box.append(card('Chance once it drops',
       h('div', {class:'big'}, '100%'),
       h('div', {class:'sub'}, 'Every ' + fname + ' rolls the same'),
-      h('div', {class:'small muted', style:'margin-top:8px'},
-        'It always comes with all three core attributes (' + fixedInfo.fixedCores.join(', ') + '), no minor attributes and the Gear Set talent, so there’s nothing left to chance.'),
+      h('div', {class:'small muted', style:'margin-top:8px'}, 'It always comes with ' + what + ', so there’s nothing left to chance.'),
       kv('Your drops of this item', fmtInt(mine))));
     return;
   }
-  if (want.core === ANY && !want.attrs.length && want.talent === ANY){
-    box.append(card(null, h('p', {class:'muted', style:'margin:0'}, 'Choose the core attribute, attributes or talent you want in step 4.'))); return;
+  if (Q.core === ANY && !want.attrs.length && want.talent === ANY){
+    box.append(card(null, h('p', {class:'muted', style:'margin:0'}, fixedInfo.fixedCore
+      ? 'Choose the attributes or talent you want in step 4.'
+      : 'Choose the core attribute, attributes or talent you want in step 4.'))); return;
   }
-  const sel = Q.sel, info = itemInfo(sel), k = itemKey(sel);
+  const sel = Q.sel, info = fixedInfo, k = itemKey(sel), coreRandom = info.corePool.length > 1;
   const own = S.drops, all = estDrops(), NB = all.length - own.length;
   const r = odds(sel, want, all), rT = odds(sel, want, []);
   const p = r.p, pT = rT.p;
@@ -1046,7 +1153,10 @@ function renderOddsResults(){
   // When a talent is asked for, drops with no recorded talent (First Sight logged before 2.1.2) can't be judged:
   // they're left out of your-drop counts and the talent row (their attribute still counts).
   const needTalent = want.talent !== ANY && info.talentPool.length > 0, hasT = d => !needTalent || !!d.talent;
-  const ownJ = ownItem.filter(hasT), noTalent = ownItem.length - ownJ.length;
+  // Drops logged with a core this item can't have (see History) aren't counted as yours either.
+  const coreOK = d => !info.fixedCore || d.core === info.fixedCore;
+  const ownOK = ownItem.filter(coreOK), wrongCore = ownItem.length - ownOK.length;
+  const ownJ = ownOK.filter(hasT), noTalent = ownOK.length - ownJ.length;
   const ownHits = ownJ.filter(d => matchesRoll(d, want)).length;
   const name = itemName(sel);
 
@@ -1064,8 +1174,8 @@ function renderOddsResults(){
     'Few drops of this exact item yet, so the estimate leans on similar items and the theoretical odds. It sharpens as you log more.'));
   box.append(main);
 
-  // One result per core attribute
-  if (info.hasCore){
+  // One result per core attribute (only items whose core is random)
+  if (info.hasCore && coreRandom){
     const list = h('div', {class:'corelist'});
     for (const core of CORES){
       const rc = odds(sel, Object.assign({}, want, {core}), all), part = rc.parts[0];
@@ -1090,7 +1200,10 @@ function renderOddsResults(){
     kv('Chance of having it by now', fmtPct(atLeast)),
     noTalent ? h('div', {class:'small muted', style:'margin-top:8px'},
       plural(noTalent, 'other drop') + ' of this item ' + (noTalent === 1 ? 'has' : 'have') + ' no talent recorded (logged before the talent could be picked), so ' +
-      (noTalent === 1 ? 'it isn’t' : 'they aren’t') + ' counted here.') : null));
+      (noTalent === 1 ? 'it isn’t' : 'they aren’t') + ' counted here.') : null,
+    wrongCore ? h('div', {class:'small warn', style:'margin-top:8px'},
+      plural(wrongCore, 'other drop') + ' of this item ' + (wrongCore === 1 ? 'was' : 'were') + ' logged with a core other than ' + info.fixedCore +
+      ', which it can’t drop with, so ' + (wrongCore === 1 ? 'it isn’t' : 'they aren’t') + ' counted here. Check ' + (wrongCore === 1 ? 'it' : 'them') + ' in History.') : null));
 
   // How many more
   const out = h('span', {class:'v'});
@@ -1114,7 +1227,7 @@ function renderOddsResults(){
   } else {
     const part = r.parts[0], partT = rT.parts[0];
     const itemD = allItem, itemC = info.hasCore ? itemD.filter(d => d.core === want.core) : itemD;
-    if (info.hasCore) row('Core', want.core, part.pc, partT.pc, itemC.length, itemD.length);
+    if (info.hasCore && coreRandom) row('Core', want.core, part.pc, partT.pc, itemC.length, itemD.length);
     if (want.attrs.length) row(want.attrs.length > 1 ? 'Attributes' : 'Attribute', want.attrs.join(' + '), part.pa, partT.pa,
       itemC.filter(d => want.attrs.every(a => (d.attrs || []).includes(a))).length, itemC.length);
     if (want.talent !== ANY) row('Talent', want.talent, part.pt, partT.pt, itemC.filter(d => d.talent === want.talent).length, itemC.filter(hasT).length);
@@ -1129,9 +1242,11 @@ function renderOddsResults(){
       h('ul', {},
         h('li', {}, 'The odds assume this exact item already dropped (type, slot, set and rarity from steps 1–3) and estimate how likely the roll you picked is.'),
         h('li', {}, 'Each part is estimated in layers: first your drops of this exact item; when there are few, it fills in with similar drops (same set, then same type, then all gear or all weapons), and finally with equal odds for every option. Formula: (times seen + K × wider estimate) ÷ (drops + K), where K is the number of options. Each drop counts only once, in the narrowest group it belongs to.'),
-        h('li', {}, 'Gear: the core is estimated per item; attributes and talent are estimated separately for each core.'),
+        h('li', {}, 'Gear: brand items, Named gear and Gear Set pieces always drop with the native core attribute of their brand or set (Catalog → Sets), so the core isn’t left to chance. Items with a random core (Core Strength pieces other than the backpack, and sets with no core in the Catalog) estimate it from drops of random-core items. Attributes and talent are estimated using only drops with the same core.'),
         h('li', {}, 'Brand items roll 2 different attributes (drawn without repeats). Gear Set pieces, weapons and Named gear outside the chest and backpack roll 1.'),
         h('li', {}, 'Named items always come with their unique attribute or perfect talent, so it never counts against you. Gear Set chests and backpacks always have the set talent.'),
+        h('li', {}, 'Exceptions among Named gear: ' + NAMED_GEAR_ROLLS.filter(x => x.fixed).map(x => x.named + ' comes with ' + x.fixed.join(' and ') + ' already rolled').join('; ') +
+          '; ' + NAMED_GEAR_ROLLS.filter(x => x.exclude).map(x => x.named + ' can’t roll ' + x.exclude.join(', ')).join(', ') + ' as its free attribute.'),
         h('li', {}, 'Exception: ' + STAT_ONLY_NAMED.map(x => x.named).join(', ') + ' only changes the weapon’s base stats, so it rolls an attribute and a talent like a High End weapon of its type. Its talents also count toward the High End weapon talent estimate.'),
         h('li', {}, 'Exception: the Core Strength backpack always has all three core attributes and no minor attributes, so it rolls the same every time. Its drops aren’t used to estimate other items’ cores or attributes.'),
         h('li', {}, 'Parts are multiplied, assuming each one rolls independently. Targeted loot and the activity can change real odds, so logging drops from the same source keeps comparisons fair.')))));
@@ -1151,6 +1266,8 @@ function renderHist(){
     h('div', {class:'stat'}, h('b', {}, fmtInt(by('weapon'))), h('span', {}, 'Weapons'))),
     gearDrops.length ? h('div', {class:'tags', style:'margin-top:10px'}, CORES.map(core =>
       h('span', {class:'tag'}, dot(COLOR[core]), core + ': ' + fmtInt(gearDrops.filter(d => d.core === core || allCoresItem(d)).length)))) : null,
+    (n => n ? h('p', {class:'small warn', style:'margin:10px 0 0'}, plural(n, 'drop') + ' logged with a core ' + (n === 1 ? 'its item' : 'their items') +
+      ' can’t drop with (marked “Core should be…” below). Check the brand or set: delete and log ' + (n === 1 ? 'it' : 'them') + ' again if it was a slip.') : null)(gearDrops.filter(offCore).length),
     BASE ? h('p', {class:'small muted', style:'margin:10px 0 0'}, 'The app includes ' + plural(BASE.drops.length, 'base drop') + ' (' + BASE.label + '). They aren’t listed here and ' +
       (S.useBase ? 'are' : 'currently aren’t') + ' used for the odds (switch it in Odds).') : null));
 
@@ -1212,9 +1329,13 @@ function dropItem(d){
   const t = (txt, c, cls) => h('span', {class:'tag' + (cls ? ' ' + cls : '')}, dot(c), txt);
   for (const c of allCoresItem(d) ? CORES : d.core ? [d.core] : []) tags.append(t(c, COLOR[c]));
   (d.attrs || []).forEach(a => tags.append(t(a, COLOR[a])));
+  const rule = namedRule(d);
+  if (rule && rule.fixed) rule.fixed.forEach(a => tags.append(t(a, COLOR[a])));
   if (d.talent) tags.append(t(d.talent, null, 'talent'));
   const perk = dropPerk(d);
   if (perk) tags.append(t(perk, null, 'perk-tag'));
+  const nat = offCore(d);
+  if (nat) tags.append(t('Core should be ' + nat, null, 'warn-tag'));
   return h('div', {class:'drop'},
     h('div', {class:'drop-top'},
       h('div', {}, h('div', {class:'drop-title'}, itemName(d)), h('div', {class:'drop-sub'}, itemSub(d) + (time ? ' · ' + time : ''))),
@@ -1244,8 +1365,9 @@ function exportCSV(){
   const head = ['date','type','set','slot','rarity','named','core','attribute_1','attribute_2','talent','unique_perk','note'];
   const lines = [head.join(',')];
   for (const d of S.drops.slice().sort((a, b) => a.ts - b.ts)){
+    const rule = namedRule(d), at = (d.attrs || []).length ? d.attrs : rule && rule.fixed ? rule.fixed : [];
     lines.push([d.ts ? new Date(d.ts).toISOString() : '', CAT_LABEL[d.cat], d.set || '', d.slot, d.rarity, d.named || '', allCoresItem(d) ? CORES.join(' + ') : d.core || '',
-      (d.attrs || [])[0] || '', (d.attrs || [])[1] || '', d.talent || '', dropPerk(d) || '', d.note || ''].map(esc).join(','));
+      at[0] || '', at[1] || '', d.talent || '', dropPerk(d) || '', d.note || ''].map(esc).join(','));
   }
   const csv = '﻿' + lines.join('\n');
   if (NATIVE){ pendingBackup = false; nCall('exportFile', 'td2-drops-' + stamp() + '.csv', 'text/csv', csv); return; }
@@ -1275,7 +1397,7 @@ function importData(text){
     S.drops.push(x); ids.add(x.id); added++;
   }
   S.drops.sort((a, b) => a.ts - b.ts);
-  if (d && d.catalog && d.catalog.v === 3 && confirm('The backup includes a catalog. Replace your current catalog with it?')){ S.catalog = normalizeCatalog(d.catalog); resetSelections(); }
+  if (d && d.catalog && (d.catalog.v === 3 || d.catalog.v === CATALOG_V) && confirm('The backup includes a catalog. Replace your current catalog with it?')){ S.catalog = normalizeCatalog(d.catalog); resetSelections(); }
   persist();
   toast(plural(added, 'drop') + ' imported');
   return true;
@@ -1309,6 +1431,47 @@ function lineArea(get, set, rows){
   ta.addEventListener('input', () => { set(ta.value); markDirty(); });
   return ta;
 }
+/* Sets are edited as "Name | Core" lines. A Gear Set split by slot: "Name | Mask, Gloves, Holster: Weapon Damage; Chest, Backpack, Kneepads: Armor".
+   No core (or "random") means the core is random. */
+function slotCoresText(v){
+  const by = {};
+  for (const s of GEAR_SLOTS) if (v[s]) (by[v[s]] = by[v[s]] || []).push(s);
+  return Object.keys(by).map(c => by[c].join(', ') + ': ' + c).join('; ');
+}
+const brToText = c => c.brands.map(n => c.brandCores[n] ? n + ' | ' + c.brandCores[n] : n).join('\n');
+const gsToText = c => c.gearSets.map(n => { const v = c.setCores[n]; return !v ? n : n + ' | ' + (typeof v === 'string' ? v : slotCoresText(v)); }).join('\n');
+function parseCore(t){
+  const x = t.trim().toLowerCase();
+  if (!x || x === 'random') return {ok: true, v: null};
+  const c = CORES.find(k => k.toLowerCase() === x);
+  return c ? {ok: true, v: c} : {ok: false};
+}
+function parseSets(text, bySlot){
+  const names = [], cores = {}, bad = [];
+  for (const line of text.split(/\r?\n/)){
+    if (!line.trim()) continue;
+    const i = line.indexOf('|'), n = (i < 0 ? line : line.slice(0, i)).trim(), rest = i < 0 ? '' : line.slice(i + 1).trim();
+    if (!n){ bad.push(line); continue; }
+    if (names.includes(n)) continue;
+    if (bySlot && rest.includes(':')){
+      const m = {}; let good = true;
+      for (const part of rest.split(';')){
+        if (!part.trim()) continue;
+        const j = part.indexOf(':'), pc = parseCore(part.slice(j + 1));
+        const slots = part.slice(0, j).split(',').map(s => s.trim()).filter(Boolean).map(s => GEAR_SLOTS.find(g => g.toLowerCase() === s.toLowerCase()));
+        if (j < 0 || !slots.length || slots.includes(undefined) || !pc.ok || !pc.v){ good = false; break; }
+        for (const s of slots) m[s] = pc.v;
+      }
+      if (!good){ bad.push(line); continue; }
+      names.push(n); cores[n] = m;   // slots left out roll a random core
+    } else {
+      const pc = parseCore(rest);
+      if (!pc.ok){ bad.push(line); continue; }
+      names.push(n); if (pc.v) cores[n] = pc.v;
+    }
+  }
+  return {names, cores, bad};
+}
 const ngToText = l => l.map(x => [x.n, x.set, x.slot, x.perk].join(' | ')).join('\n');
 const nwToText = l => l.map(x => [x.n, x.type, x.perk, x.base].join(' | ').replace(/ \| $/, '')).join('\n');
 function parseNamed(text, kind){
@@ -1326,17 +1489,19 @@ function parseNamed(text, kind){
   return {ok, bad};
 }
 function renderCatalog(){
-  if (!catDirty || !CW) CW = Object.assign(clone(S.catalog), {ngText: ngToText(S.catalog.namedGear), nwText: nwToText(S.catalog.namedWeapons)});
+  if (!catDirty || !CW) CW = Object.assign(clone(S.catalog), {brText: brToText(S.catalog), gsText: gsToText(S.catalog),
+    ngText: ngToText(S.catalog.namedGear), nwText: nwToText(S.catalog.namedWeapons)});
   const root = $('#catalog');
   root.replaceChildren();
   root.append(h('p', {class:'small muted', style:'margin:12px 2px 0'},
     'Preloaded with the game’s sets, attributes, talents and Named items (up to Red Horizon). Edit them if a season adds or changes something: one item per line. Renaming something doesn’t change drops you already logged.'));
   root.append(card('Sets',
-    field('Brand Sets', listArea(() => CW.brands, v => { CW.brands = v; }, 8)),
-    field('Gear Sets', listArea(() => CW.gearSets, v => { CW.gearSets = v; }, 8))));
+    h('p', {class:'small muted', style:'margin:0'}, 'One per line: Name | Core attribute (' + CORES.join(', ') + '). Every item of that brand or set drops with that core. Leave the core out if it’s random. A Gear Set split by slot: Name | Mask, Gloves, Holster: Weapon Damage; Chest, Backpack, Kneepads: Armor.'),
+    field('Brand Sets', lineArea(() => CW.brText, v => { CW.brText = v; }, 8)),
+    field('Gear Sets', lineArea(() => CW.gsText, v => { CW.gsText = v; }, 8))));
   root.append(card('Attributes',
     field('Gear attributes', listArea(() => CW.gearAttrs, v => { CW.gearAttrs = v; }, 8)),
-    field('Weapon attributes', listArea(() => CW.weaponAttrs, v => { CW.weaponAttrs = v; }, 5), 'the weapon’s core 2 is excluded')));
+    field('Weapon attributes', listArea(() => CW.weaponAttrs, v => { CW.weaponAttrs = v; }, 8), 'the weapon’s core 2 is excluded')));
   root.append(card('Gear talents (Brand High End)',
     h('p', {class:'small muted', style:'margin:0'}, 'Gear Set chests and backpacks always have the set’s own talent, so they aren’t listed.'),
     field('Chest', listArea(() => CW.chestTalents, v => { CW.chestTalents = v; }, 7)),
@@ -1390,12 +1555,16 @@ function renderWTalents(container){
 }
 function saveCatalog(){
   const g = parseNamed(CW.ngText, 'gear'), w = parseNamed(CW.nwText, 'weapon');
-  const bad = g.bad.length + w.bad.length;
-  if (bad && !confirm(plural(bad, 'Named line') + ' couldn’t be read (check the slot or type) and will be skipped:\n\n' + g.bad.concat(w.bad).slice(0, 6).join('\n') + '\n\nSave anyway?')) return;
+  const br = parseSets(CW.brText, false), gs = parseSets(CW.gsText, true);
+  const badSets = br.bad.concat(gs.bad), badNamed = g.bad.concat(w.bad);
+  if (badSets.length && !confirm(plural(badSets.length, 'set line') + ' couldn’t be read (check the core: ' + CORES.join(', ') + ') and will be skipped:\n\n' + badSets.slice(0, 6).join('\n') + '\n\nSave anyway?')) return;
+  if (badNamed.length && !confirm(plural(badNamed.length, 'Named line') + ' couldn’t be read (check the slot or type) and will be skipped:\n\n' + badNamed.slice(0, 6).join('\n') + '\n\nSave anyway?')) return;
   const next = Object.assign({}, CW, {namedGear: g.ok, namedWeapons: w.ok});
-  delete next.ngText; delete next.nwText;
+  if (br.names.length) Object.assign(next, {brands: br.names, brandCores: br.cores});
+  if (gs.names.length) Object.assign(next, {gearSets: gs.names, setCores: gs.cores});
+  delete next.ngText; delete next.nwText; delete next.brText; delete next.gsText;
   next.weaponTalents = next.weaponTalents.filter(t => t.n);
-  next.v = 3;
+  next.v = CATALOG_V;
   S.catalog = normalizeCatalog(next);
   catDirty = false; CW = null;
   resetSelections();

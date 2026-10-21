@@ -8,9 +8,15 @@ getting the roll you want once a specific item drops.
   Named items lock their unique attribute or perfect talent; Gear Set chests and backpacks lock the set talent.
 - **Odds**: pick an item (steps 1–3) and the roll you want (step 4). The app estimates the chance of that roll
   *once that item drops*, from your own drops, separately for each core attribute.
+- **Native cores**: brand items, Named gear and Gear Set pieces always drop with the core attribute of their brand
+  or set, so Log drop fills it in and Odds doesn't treat it as chance. History flags drops logged with a core their
+  item can't have.
 - Your data lives in a `.json` file you choose on your phone (for example in Documents). No internet permission.
 - Catalog preloaded with every Brand Set, Gear Set, attribute, talent and Named item up to Red Horizon (Y8S3),
-  editable inside the app.
+  editable inside the app. Since 2.2 it follows the community
+  [Division 2 Gear Spreadsheet](https://docs.google.com/spreadsheets/d/1nrPBmOrtpkEW1j5fbcRT7L-AXgsGOqMqxXoVtopsiGM/htmlview)
+  (native cores, the 13 weapon attributes, which talents roll on each weapon type), plus Red Horizon items from
+  newer sources.
 
 ## How the odds are estimated
 
@@ -26,14 +32,25 @@ exact item, it approaches what you actually got. Groups used:
 
 | Part | Narrow → wide |
 |---|---|
-| Core | this item → same set → same type (Brand / Gear Set) → all gear |
+| Core (only items with a random core) | this item → same set → same type (Brand / Gear Set) → all random-core gear |
 | Gear attributes | this item → same type → all gear (each with the same core) → all gear |
 | Brand talent | this item → same slot (each with the same core) → same slot |
 | Weapon attribute | this item → same weapon type → all weapons |
 | Weapon talent | this item → all High End weapons |
 
 Brand items roll 2 distinct attributes (drawn without repeats); Gear Set pieces, weapons and Named gear outside
-the chest and backpack roll 1.
+the chest and backpack roll 1. Weapons roll 1 of 13 attributes, minus their type's core 2.
+
+**Native cores:** every brand and Gear Set has a core attribute (Catalog → Sets, written `Name | Core`), and its
+items always drop with it, so the core part is 100%. System Corruption splits it by slot
+(`Name | Mask, Gloves, Holster: Weapon Damage; Backpack, Chest, Kneepads: Armor`). Sets with no core in the catalog
+(Core Strength pieces other than the backpack, and Refactor, whose split isn't confirmed) roll a random core,
+estimated only from other random-core drops. Drops logged with a core their item can't have are flagged in History
+and left out of "Your drops"; they're never changed automatically.
+
+**Named gear exceptions:** Turmoil comes with Critical Hit Damage and Critical Hit Chance already rolled (nothing to
+pick); the free attribute of Punch Drunk, Eagle's Grasp and Firm Handshake can't be their unique one (Headshot Damage,
+Weapon Handling, Status Effects).
 
 **Exception:** the Core Strength backpack always has all three core attributes (Weapon Damage, Armor and Skill Tier)
 and no minor attributes, so it has nothing to roll: Log drop saves it without a core or attributes, and Odds shows it
@@ -65,7 +82,7 @@ The script removes each drop's note and date, because this repository is public.
 Every push to `main` runs `.github/workflows/build.yml`, publishes `drops-td2.apk` as an artifact and as a
 **Release** (download it on your phone from `https://github.com/MiguelFlVe/td2-drops-app/releases/latest`).
 
-- The version name comes from the `VERSION` file (for example `2.1.1`). Bump it in every release commit: the build
+- The version name comes from the `VERSION` file (for example `2.2`). Bump it in every release commit: the build
   stops if a release with that version already exists. The version code is the run number, so it always goes up.
 - The release notes start with `RELEASE_NOTES.md` (what's new in this version).
 - Commits that don't change the app (docs, tests, data) add `[skip ci]` to the message.
@@ -84,7 +101,8 @@ stable signature (updates install over the previous version). Without it, each b
 
 - `python3 tests/run_all.py` runs the browser tests (Playwright + Chromium) against `app/src/main/assets/index.html`:
   the 4-step flow, the odds (checked against an independent Python implementation), migration of old files, the
-  native file bridge (mocked), catalog editing, base data and the Core Strength backpack and First Sight exceptions.
+  native file bridge (mocked), catalog editing, base data, the Core Strength backpack and First Sight exceptions, and
+  the spreadsheet data (native cores, Named gear rolls, catalog v3 → v4 upgrade).
 - `python3 tools/apk_signature.py drops-td2.apk` and `python3 tools/apk_manifest.py drops-td2.apk` check a built
   APK's signature, certificate and version.
 

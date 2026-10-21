@@ -40,10 +40,10 @@ with sync_playwright() as p:
     L='#log'; btn=lambda n: pg.locator(L).get_by_role('button', name=n, exact=True).first
     btn('Weapon').click(); btn('Pistol').click(); btn('High End').click()
     st4=pg.locator(L+' .step').nth(3)
-    ok('None on pistols' in st4.inner_text() and len(st4.locator('.chip').all_inner_texts())==6, 'pistol: no core 2, 6 attributes')
+    ok('None on pistols' in st4.inner_text() and len(st4.locator('.chip').all_inner_texts())==13, 'pistol: no core 2, 13 attributes')
     btn('Headshot Damage').click(); st4.locator('select').select_option('Salvage'); pg.locator('#logbar button').click()
     f=json.loads(pg.evaluate("localStorage.getItem('mock:file:td2-drops.json')"))
-    ok(f['v']==3 and f['catalog']['v']==3 and len(f['catalog']['namedGear'])==69, 'file rewritten as v3 with English catalog')
+    ok(f['v']==3 and f['catalog']['v']==4 and len(f['catalog']['namedGear'])==69, 'file rewritten as v3 with the English catalog (v4)')
     ok(all(d['cat'] in ('brand','gear','weapon') for d in f['drops']) and f['drops'][1]['set']=='Česká Výroba s.r.o.' and f['drops'][1]['note']=='Countdown', 'drops rewritten in new format, notes kept')
     # reload keeps everything
     pg.reload(); ok(pg.locator('#count').inner_text()=='5 drops', 'restart: data reloaded from file')

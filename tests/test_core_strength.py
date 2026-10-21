@@ -40,7 +40,8 @@ with sync_playwright() as p:
     ok(st4.locator('.chip').count()==3+12 and pg.locator('#logbar .missing').inner_text()=='Missing: core attribute, attribute', 'Core Strength chest: core + 1 attribute as usual')
     btn('Armor').click(); btn('Health').click(); pg.locator('#logbar button').click()
     btn('Backpack').click(); pg.locator(L+' select').first.select_option('Hard Wired')
-    ok(pg.locator(L+' .step').nth(3).locator('.chip').count()==15, 'another Gear Set backpack: core + 1 attribute as usual')
+    st4=pg.locator(L+' .step').nth(3)
+    ok(st4.locator('.chip').count()==12 and st4.locator('.fixed').inner_text().startswith('Skill Tier'), 'another Gear Set backpack: native core (Skill Tier) + 1 attribute as usual')
     d=json.loads(pg.evaluate("localStorage.getItem('td2-drop-tracker-v1')"))['drops']
     ok(len(d)==2 and d[0]['set']=='Core Strength' and d[0]['slot']=='Backpack' and d[0]['core'] is None and d[0]['attrs']==[] and d[0]['talent'] is None, 'stored with no core, attributes or talent: %s'%d[0])
     ok(d[1]['core']=='Armor' and d[1]['attrs']==['Health'], 'Core Strength chest stored normally')
