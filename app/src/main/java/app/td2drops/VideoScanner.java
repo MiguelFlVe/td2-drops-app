@@ -89,6 +89,7 @@ public class VideoScanner {
                 listener.progress(pct, "Reading the video… " + (t / 1000) + " of " + (durationMs / 1000) + " s");
             }
 
+            if (frames == 0) return error("Couldn't read the frames of this video.");
             JSONObject o = new JSONObject();
             o.put("ok", true);
             o.put("segments", new JSONArray(VideoTracker.toJson(tracker.finish())));

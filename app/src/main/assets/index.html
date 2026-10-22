@@ -127,6 +127,27 @@ details ul{padding-left:18px;margin:6px 0}
 .drop-title{font-weight:700}
 .drop-sub{font-size:13px;color:var(--muted)}
 .drop-time{font-size:12px;color:var(--muted)}
+.vhead{display:flex;align-items:center;gap:12px;margin:12px 0}
+.vhead .btn{min-height:38px;padding:6px 12px}
+.video-entry{margin:12px 0 2px;justify-content:space-between;text-align:left}
+.video-entry small{font-weight:500;color:var(--muted);font-size:12px}
+.progress{height:10px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);overflow:hidden}
+.progress>div{height:100%;background:var(--accent);transition:width .3s}
+.tips{margin:0;padding-left:20px;font-size:14px;line-height:1.45}
+.tips li{margin:4px 0}
+.vitem{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin:8px 0}
+.vitem.off{opacity:.6}
+.vitem.bad{border-color:var(--danger)}
+.vitem-h{display:flex;align-items:center;gap:10px;cursor:pointer}
+.vitem-h input{width:22px;height:22px;flex:none;accent-color:var(--accent);margin:0}
+.vitem-t{flex:1;min-width:0}
+.vitem-t small{display:block;color:var(--muted);font-size:12px}
+.pill.warn{border-color:var(--yellow);color:var(--text);background:rgba(239,194,58,.15)}
+.vitem-b{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:6px;padding-left:32px}
+.vitem-b .small{flex:1 1 100%}
+.vmiss{color:var(--danger);font-size:13px;font-weight:600}
+.vedit{min-height:34px;padding:4px 12px;font-size:13px;margin-left:auto}
+.vedit-box{margin-top:8px;border-top:1px solid var(--border);padding-top:4px}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .tag{font-size:12px;padding:3px 8px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px}
 .tag .dot{width:7px;height:7px;border-radius:50%}
@@ -647,7 +668,11 @@ window.__onResume = function(){
     if (d){ if (applyData(d)) resetSelections(); lastText = r.text; nCall('saveCache', r.text); updateChrome(); renderView(); toast('Reloaded: the file changed outside the app'); }
   }
 };
-window.__onBack = function(){ if (view !== 'log'){ setView('log'); return true; } return false; };
+window.__onBack = function(){
+  if (view !== 'log'){ setView('log'); return true; }
+  if (V.open){ closeVideo(); return true; }
+  return false;
+};
 window.__nativeImport = function(text){ importData(text); renderView(); };
 window.__nativeSaved = function(ok, msg){
   if (ok && pendingBackup) markBackup();
@@ -914,16 +939,7 @@ function toast(msg, actLabel, act){
 const R = {sel: blankSel(), core: null, attrs: [], talent: null, note: ''};
 function resetRoll(o, any){ o.core = any ? ANY : null; o.attrs = []; o.talent = any ? ANY : null; }
 
-function logMissing(){
-  if (!stepDone(R.sel, 1)) return ['type'];
-  if (!stepDone(R.sel, 2)) return [R.sel.cat === 'weapon' ? 'weapon type' : !R.sel.slot ? 'slot' : R.sel.cat === 'gear' ? 'Gear Set' : 'brand'];
-  if (!stepDone(R.sel, 3)) return [R.sel.rarity === NAMED ? 'Named item' : 'rarity'];
-  const info = itemInfo(R.sel), m = [];
-  if (info.hasCore && !info.fixedCore && !R.core) m.push('core attribute');
-  if (R.attrs.length !== info.attrSlots) m.push(info.attrSlots === 2 ? '2 attributes' : 'attribute');
-  if (info.talentPool.length && !R.talent) m.push('talent');
-  return m;
-}
+function logMissing(){ return missingOf(R); }
 function rollFields(o, info, isOdds, rerender){
   const out = [];
   if (info.fixedCores){
@@ -967,6 +983,9 @@ function rollFields(o, info, isOdds, rerender){
 function renderLog(){
   const root = $('#log');
   root.replaceChildren();
+  if (V.open) return renderVideo(root);
+  if (videoAvailable()) root.append(h('button', {type:'button', class:'btn block video-entry', onclick: openVideo},
+    h('span', {}, 'Log from a video'), h('small', {}, 'read new items from a console clip')));
   root.append(...itemSteps(R.sel, (k, v) => { if (applySel(R.sel, k, v)) resetRoll(R); renderLog(); }));
   const d3 = stepDone(R.sel, 3);
   const body = h('div', {});
@@ -995,6 +1014,389 @@ function saveDrop(){
   toast('Drop saved', 'Undo', () => {
     S.drops = S.drops.filter(x => x.id !== d.id);
     persist(); renderView(); toast('Drop removed');
+  });
+}
+
+/* ================= 1b) LOG FROM A VIDEO =================
+   The Android side follows the cursor through an inventory video recorded on the console, tells which items were new
+   (their "!" badge vanished when the cursor reached them) and reads the details panel of each one with on-device OCR.
+   Here those OCR lines become drops: they're matched against the catalog and shown for review before saving. */
+const VIDEO_SECTIONS = ['Weapons'].concat(GEAR_SLOTS);
+const GAME_TYPES = {'sub machine gun':'Submachine Gun', 'submachine gun':'Submachine Gun', 'assault rifle':'Assault Rifle',
+  'marksman rifle':'Marksman Rifle', 'light machine gun':'Light Machine Gun', 'shotgun':'Shotgun', 'rifle':'Rifle', 'pistol':'Pistol'};
+/* In-game wording → catalog wording */
+const GAME_ALIASES = {'dmg to target out of cover':'Damage to Targets Out of Cover', 'damage to target out of cover':'Damage to Targets Out of Cover',
+  'dmg to targets out of cover':'Damage to Targets Out of Cover', 'health damage':'Damage to Health', 'dmg to health':'Damage to Health',
+  'armor damage':'Damage to Armor', 'dmg to armor':'Damage to Armor', 'armor regen':'Armor Regeneration', 'crit chance':'Critical Hit Chance',
+  'crit damage':'Critical Hit Damage', 'headshot dmg':'Headshot Damage'};
+const PANEL_HEADERS = ['core stats', 'expertise', 'core attributes', 'core attribute', 'attributes', 'weapon handling', 'talents', 'talent',
+  'mods', 'dye', 'appearance', 'brand set', 'gear set', 'proficient', 'damage drop off'];
+const GAME_RARITIES = {'high-end':HE, 'high end':HE, 'exotic':'Exotic', 'named':NAMED, 'gear set':GS, 'superior':'Superior', 'specialized':'Specialized'};
+
+const vNorm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[’`]/g, "'")
+  .replace(/[^a-z0-9&' ]+/g, ' ').replace(/\s+/g, ' ').trim();
+function vLev(a, b){
+  if (!a.length || !b.length) return Math.max(a.length, b.length);
+  let prev = Array.from({length: b.length + 1}, (_, j) => j);
+  for (let i = 1; i <= a.length; i++){
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[b.length];
+}
+const vSim = (a, b) => 1 - vLev(a, b) / Math.max(a.length, b.length, 1);
+/* Drops stat values and icon noise: "© +13.2% SMG Damage |" → "SMG Damage" */
+const vClean = line => String(line)
+  .replace(/[+\-–#]?\s?\d[\d.,]*\s*(%|k|m|hp\/s|s)?(?=\s|$)/gi, ' ')
+  .replace(/^[^A-Za-z]+/, '')
+  .replace(/[|©®@¥{}\[\]()“”"_—=~*;:<>]+/g, ' ')
+  .replace(/\s+/g, ' ').trim();
+/* Best option for a line (OCR noise after the name is allowed). Returns {o, s} or null. */
+function vMatch(text, options, min){
+  const t = vNorm(text);
+  if (!t) return null;
+  const words = t.split(' ');
+  let best = null;
+  for (const o of options){
+    const n = vNorm(o), k = n.split(' ').length;
+    for (const c of [t, words.slice(0, k).join(' '), words.slice(0, k + 1).join(' ')]){
+      const s = vSim(c, n);
+      if (s >= (min || 0.8) && (!best || s > best.s)) best = {o, s};
+    }
+  }
+  return best;
+}
+function vAlias(text, options){
+  const t = vNorm(text);
+  for (const a in GAME_ALIASES) if (t.startsWith(a) || vSim(t, a) >= 0.85) return options.includes(GAME_ALIASES[a]) ? GAME_ALIASES[a] : null;
+  const m = vMatch(text, options, 0.8);
+  if (m) return m.o;
+  // Icon noise before the name ("ie Armor Regen"): look for a whole name inside the line
+  for (const a in GAME_ALIASES) if ((' ' + t + ' ').includes(' ' + a + ' ')) return options.includes(GAME_ALIASES[a]) ? GAME_ALIASES[a] : null;
+  const inside = options.filter(o => (' ' + t + ' ').includes(' ' + vNorm(o) + ' ')).sort((a, b) => b.length - a.length);
+  return inside[0] || null;
+}
+/* A brand or Gear Set name (they can wrap onto a second line, and "Sp. z o.o." reads badly) */
+function vSetName(text){
+  const t = vNorm(text);
+  if (t.length < 4) return null;
+  let best = null;
+  for (const [list, kind] of [[C().brands, 'brand'], [C().gearSets, 'gearSet']]){
+    for (const o of list){
+      const n = vNorm(o);
+      let sc = vSim(t, n);
+      if (t.length >= 8 && n.startsWith(t)) sc = Math.max(sc, 0.9);
+      if (sc >= 0.82 && (!best || sc > best.s)) best = {o, s: sc, kind};
+    }
+  }
+  return best;
+}
+/* A section header of the panel ("Attributes", "Talents"…). Lines with a stat value never are: "+15% Weapon Handling" is an attribute. */
+function vHeader(text, raw){
+  if (/\d\s*%|\d[.,]\d/.test(raw || '')) return null;
+  const words = vNorm(text).split(' ');
+  for (const h of PANEL_HEADERS.slice().sort((a, b) => b.length - a.length)){
+    const k = h.split(' ').length;
+    if (vSim(words.slice(0, k).join(' '), h) >= 0.85 && words.slice(k).join('').length <= 3) return h;
+  }
+  return null;
+}
+/* OCR lines ({t, x, y, w, h, a}) → text rows top to bottom. ML Kit splits a row like "+13.2%   SMG Damage" into
+   separate lines, and the panel is drawn slightly tilted, so lines are straightened before grouping. */
+function ocrRows(lines){
+  const ls = (lines || []).filter(l => l && typeof l.t === 'string' && l.t.trim());
+  if (!ls.length) return [];
+  const angles = ls.filter(l => l.w > 80 && typeof l.a === 'number').map(l => l.a).sort((a, b) => a - b);
+  const ang = angles.length ? angles[angles.length >> 1] : 0;
+  const tan = Math.tan(ang * Math.PI / 180);
+  const hs = ls.map(l => l.h).sort((a, b) => a - b), mh = hs[hs.length >> 1] || 20;
+  const items = ls.map(l => ({t: l.t.trim(), x: l.x, key: (l.y + l.h / 2) - tan * (l.x + l.w / 2)})).sort((a, b) => a.key - b.key);
+  const rows = [];
+  for (const it of items){
+    const r = rows[rows.length - 1];
+    if (r && Math.abs(it.key - r.key) < mh * 0.6){ r.parts.push(it); r.key = (r.key * (r.parts.length - 1) + it.key) / r.parts.length; }
+    else rows.push({key: it.key, parts: [it]});
+  }
+  return rows.map(r => r.parts.sort((a, b) => a.x - b.x).map(p => p.t).join(' '));
+}
+/* Everything the panel showed for one item, voted over all the frames that were read. */
+function readPanel(frames){
+  const C0 = C();
+  const allAttrs = Array.from(new Set(C0.weaponAttrs.concat(C0.gearAttrs)));
+  const coreNames = Array.from(new Set(Object.values(WEAPON_CORE).flatMap(w => [w.core1, w.core2]).filter(Boolean).concat(CORES)));
+  const talents = Array.from(new Set(C0.weaponTalents.map(t => t.n).concat(C0.chestTalents, C0.backpackTalents)));
+  const vote = {};
+  const add = (k, v) => { if (v == null || v === '') return; (vote[k] = vote[k] || {}); vote[k][v] = (vote[k][v] || 0) + 1; };
+  for (const f of frames || []){
+    const rows = ocrRows(f.lines);
+    let sec = null;
+    for (let i = 0; i < rows.length; i++){
+      const raw = rows[i], c = vClean(raw), t = vNorm(c);
+      if (!t) continue;
+      // Header block: the rarity line, with the item name above it and the weapon type (or armor) below
+      const rk = sec === null && Object.keys(GAME_RARITIES).find(r => vSim(t.split(' ').slice(0, r.split(' ').length).join(' '), vNorm(r)) >= 0.85);
+      if (rk && i > 0){
+        add('rarity', GAME_RARITIES[rk]);
+        add('name', rows[i - 1].replace(/\bR[A-Z]{2,4}\b.*$/, '').replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9.'’)]+$/g, '').trim()
+          .replace(/(\s+[a-z]{1,4})+$/, ''));   // icon noise read as short lowercase words ("Black Market T821 iets")
+        const ty = vMatch(vClean(rows[i + 1] || ''), Object.keys(GAME_TYPES), 0.8);
+        if (ty) add('type', GAME_TYPES[ty.o]);
+        continue;
+      }
+      const hd = vHeader(c, raw);
+      if (hd){ sec = hd; continue; }
+      if (sec === 'core attributes' || sec === 'core attribute') add('core', vAlias(c, coreNames));
+      else if (sec === 'attributes'){
+        if (/empty|mod slot/i.test(c)) continue;
+        let a = vAlias(c, allAttrs);
+        const nx = vClean(rows[i + 1] || '');
+        if (nx && !vHeader(nx, rows[i + 1]) && nx.split(' ').length <= 2){   // "DMG to target out of" + "cover"
+          const j = vAlias(c + ' ' + nx, allAttrs);
+          if (j){ a = j; i++; }
+        }
+        add('attr', a);
+      } else if (sec === 'talents' || sec === 'talent'){
+        const m = vMatch(c.replace(/^perfect(ly)?\s+/i, ''), talents, 0.8);
+        if (m){ add('talent', m.o); if (/^perfect/i.test(c)) add('perfect', 'yes'); sec = 'talent read'; }
+      }
+      // Brand / Gear Set name: the line after its header, or any line like "Habsburg Guard (0/3)"
+      if (sec === 'brand set' || sec === 'gear set' || /\(\s*\d\s*\/\s*\d\s*\)/.test(raw)){
+        const one = raw.replace(/\(.*$/, ''), two = one + ' ' + (rows[i + 1] || '').replace(/\(.*$/, '');
+        const m = [vSetName(vClean(one)), vSetName(vClean(two))].filter(Boolean).sort((a, b) => b.s - a.s)[0];
+        if (m) add(m.kind, m.o);
+      }
+    }
+  }
+  const ranked = k => Object.entries(vote[k] || {}).sort((a, b) => b[1] - a[1]).map(e => e[0]);
+  return {name: ranked('name')[0] || '', rarity: ranked('rarity')[0] || null, type: ranked('type')[0] || null,
+    cores: ranked('core'), attrs: ranked('attr'), talents: ranked('talent'), perfect: !!vote.perfect,
+    brand: ranked('brand')[0] || null, gearSet: ranked('gearSet')[0] || null, frames: (frames || []).length};
+}
+const perfectOf = perk => { const m = /^perfect(ly)?\s+(.+)$/i.exec(perk || ''); return m ? m[2] : null; };
+/* One reviewed item from a video segment, ready to edit like a manual log: {sel, core, attrs, talent, …} */
+function videoItem(seg, section){
+  const p = readPanel(seg.frames);
+  const it = {sel: blankSel(), core: null, attrs: [], talent: null, note: '', status: seg.status, why: seg.why || '', t0: seg.t0, read: p,
+    title: p.name, skip: null};
+  if (!p.rarity && !p.name && !p.brand && !p.gearSet && !p.type && !p.cores.length){ it.skip = 'unread'; return it; }
+  if (p.rarity === 'Exotic' || p.rarity === 'Superior' || p.rarity === 'Specialized'){ it.skip = 'rarity'; return it; }
+  const C0 = C(), s = it.sel;
+  if (section === 'Weapons'){
+    let type = p.type;
+    if (!type){   // no type line read: the first core attribute tells it ("SMG Damage" → Submachine Gun)
+      const c1 = p.cores.find(c => WEAPON_TYPES.some(w => WEAPON_CORE[w].core1 === c));
+      type = WEAPON_TYPES.find(w => WEAPON_CORE[w].core1 === c1) || null;
+    }
+    let named = null;
+    if (p.name){
+      const pool = type ? C0.namedWeapons.filter(n => n.type === type) : C0.namedWeapons;
+      const m = vMatch(p.name, pool.map(n => n.n), 0.8) || vMatch(p.name, C0.namedWeapons.map(n => n.n), 0.86);
+      if (m) named = C0.namedWeapons.find(n => n.n === m.o);
+    }
+    if (!named && p.perfect && p.talents.length){   // "Perfect Ranger" on a Marksman Rifle → Ekim's Long Stick
+      const hits = C0.namedWeapons.filter(n => (!type || n.type === type) && perfectOf(n.perk) === p.talents[0]);
+      if (hits.length === 1) named = hits[0];
+    }
+    if (named) type = named.type;
+    s.cat = 'weapon'; s.slot = type || null;
+    if (!s.slot) return it;
+    s.rarity = named ? NAMED : HE; s.named = named ? named.n : null;
+  } else {
+    s.slot = section;
+    let named = null;
+    if (p.name){
+      const m = vMatch(p.name, C0.namedGear.filter(n => n.slot === section).map(n => n.n), 0.8);
+      if (m) named = C0.namedGear.find(n => n.n === m.o && n.slot === section);
+    }
+    if (!named && p.perfect && p.talents.length){   // "Perfect Trauma" on a Habsburg Guard chest → Cherished
+      const hits = C0.namedGear.filter(n => n.slot === section && (!p.brand || n.set === p.brand) && perfectOf(n.perk) === p.talents[0]);
+      if (hits.length === 1) named = hits[0];
+    }
+    if (named){ s.cat = 'brand'; s.set = named.set; s.rarity = NAMED; s.named = named.n; }
+    else if (p.gearSet && (p.rarity === GS || !p.brand)){ s.cat = 'gear'; s.set = p.gearSet; s.rarity = GS; }
+    else if (p.brand){ s.cat = 'brand'; s.set = p.brand; s.rarity = HE; }
+    else { s.cat = p.rarity === GS ? 'gear' : 'brand'; if (s.cat === 'gear') s.rarity = GS; else s.rarity = HE; }
+  }
+  fillRoll(it);
+  return it;
+}
+/* After the type, slot or brand is fixed by hand, the rarity is guessed again from what was read (Named by name or perfect talent) */
+function guessRarity(it){
+  const s = it.sel, p = it.read;
+  if (s.rarity || s.cat === 'gear' || !s.slot || (s.cat === 'brand' && !s.set)) return;
+  const pool = namedOptions(s);
+  const byName = p.name ? vMatch(p.name, pool.map(n => n.n), 0.8) : null;
+  const byPerk = p.perfect && p.talents.length ? pool.filter(n => perfectOf(n.perk) === p.talents[0]) : [];
+  const n = byName ? pool.find(x => x.n === byName.o) : byPerk.length === 1 ? byPerk[0] : null;
+  s.rarity = n ? NAMED : HE; s.named = n ? n.n : null;
+}
+/* Core, attributes and talent from what was read, for the item as it's identified now (also after an edit) */
+function fillRoll(it){
+  const p = it.read, s = it.sel;
+  it.core = null; it.attrs = []; it.talent = null;
+  if (!stepDone(s, 3)) return;
+  const info = itemInfo(s);
+  if (info.hasCore && !info.fixedCore) it.core = p.cores.find(c => CORES.includes(c)) || null;
+  if (info.attrSlots){
+    const perk = info.lockedAttr ? vNorm(info.lockedAttr) : '';
+    it.attrs = p.attrs.filter(a => info.attrPool.includes(a) && !(perk && perk.includes(vNorm(a)))).slice(0, info.attrSlots);
+  }
+  if (info.talentPool.length) it.talent = p.talents.find(t => info.talentPool.includes(t)) || null;
+}
+function missingOf(o){
+  if (!stepDone(o.sel, 1)) return ['type'];
+  if (!stepDone(o.sel, 2)) return [o.sel.cat === 'weapon' ? 'weapon type' : !o.sel.slot ? 'slot' : o.sel.cat === 'gear' ? 'Gear Set' : 'brand'];
+  if (!stepDone(o.sel, 3)) return [o.sel.rarity === NAMED ? 'Named item' : 'rarity'];
+  const info = itemInfo(o.sel), m = [];
+  if (info.hasCore && !info.fixedCore && !o.core) m.push('core attribute');
+  if (o.attrs.length !== info.attrSlots) m.push(info.attrSlots === 2 ? '2 attributes' : 'attribute');
+  if (info.talentPool.length && !o.talent) m.push('talent');
+  return m;
+}
+/* Video segments → items to review. Old items are left out; when it couldn't be told whether an item was new,
+   it's pre-checked only if it came after a new one and before any old one (the list is sorted by New). */
+function videoItems(segments, section){
+  const out = [], skipped = {old: 0, rarity: 0, unread: 0};
+  let phase = 'before';
+  for (const seg of segments || []){
+    if (seg.status === 'old'){ skipped.old++; if (phase === 'new') phase = 'after'; continue; }
+    const it = videoItem(seg, section);
+    if (it.skip){ skipped[it.skip]++; continue; }
+    if (seg.status === 'new') phase = 'new';
+    it.checked = seg.status === 'new' || phase === 'new';
+    out.push(it);
+  }
+  return {items: out, skipped};
+}
+
+const V = {open: false, section: null, phase: 'pick', pct: 0, msg: '', items: [], skipped: null, stats: null, error: '', editing: -1};
+const videoAvailable = () => NATIVE && typeof window.AndroidDB.pickVideo === 'function';
+function openVideo(){ Object.assign(V, {open: true, phase: 'pick', items: [], error: '', editing: -1}); renderLog(); window.scrollTo(0, 0); }
+function closeVideo(){
+  if (V.phase === 'review' && V.items.length && !confirm('Discard the items read from the video?')) return;
+  if (V.phase === 'scan') nCall('cancelVideo');
+  Object.assign(V, {open: false, phase: 'pick', items: [], editing: -1});
+  renderLog(); window.scrollTo(0, 0);
+}
+window.__videoProgress = function(pct, msg){
+  if (!V.open) return;   // the video screen was closed (the reading is being cancelled)
+  const first = V.phase !== 'scan';
+  V.phase = 'scan'; V.pct = pct; V.msg = msg;
+  const bar = $('#vprog'), m = $('#vmsg');
+  if (first || !bar || view !== 'log') { if (view === 'log' && V.open) renderLog(); return; }
+  bar.style.width = Math.max(2, pct) + '%'; m.textContent = msg;
+};
+window.__videoDone = function(){
+  const r = nJSON('videoResult') || {ok: false, error: 'No result from the video reader.'};
+  if (!V.open && r.error === 'cancelled') return;
+  if (!r.ok){
+    V.phase = 'pick';
+    V.error = r.error === 'cancelled' ? '' : r.error;
+  } else {
+    const res = videoItems(r.segments, V.section);
+    Object.assign(V, {phase: 'review', items: res.items, skipped: res.skipped, error: '', editing: -1,
+      stats: {duration: r.duration, elapsed: r.elapsed, frames: r.frames, ocr: r.ocr}});
+  }
+  V.open = true;
+  if (view !== 'log') setView('log'); else renderLog();
+};
+function videoSummary(it){
+  const s = it.sel, p = it.read;
+  if (!stepDone(s, 3)){
+    const read = p.cores.filter(c => CORES.includes(c)).slice(0, 1).concat(p.attrs.slice(0, 2), p.talents.slice(0, 1));
+    return read.length ? 'Read: ' + read.join(' · ') : 'Nothing else could be read';
+  }
+  const info = itemInfo(s), bits = [];
+  if (info.hasCore) bits.push(info.fixedCore || it.core || '?');
+  bits.push(...it.attrs);
+  if (info.lockedTalent && s.rarity === NAMED) bits.push(info.lockedTalent);
+  else if (it.talent) bits.push(it.talent);
+  return bits.join(' · ');
+}
+function renderVideo(root){
+  root.append(h('div', {class:'vhead'}, h('button', {type:'button', class:'btn', onclick: closeVideo}, '← Back'), h('b', {}, 'Log from a video')));
+  if (V.phase === 'scan'){
+    root.append(card('Reading the video',
+      h('div', {class:'progress'}, h('div', {id:'vprog', style:'width:' + Math.max(2, V.pct) + '%'})),
+      h('div', {class:'small muted', id:'vmsg', style:'margin-top:8px'}, V.msg || 'Starting…'),
+      h('div', {class:'small muted', style:'margin-top:8px'}, 'Everything happens on your phone, without a connection. Keep the app open.'),
+      h('button', {type:'button', class:'btn block', style:'margin-top:12px', onclick: () => nCall('cancelVideo')}, 'Cancel')));
+    return;
+  }
+  if (V.phase === 'review') return renderVideoReview(root);
+  const pick = card('Which inventory section is in the video?',
+    chips(VIDEO_SECTIONS.map(s => opt(s)), V.section, v => { V.section = v; renderLog(); }, 2));
+  root.append(pick);
+  if (V.error) root.append(h('div', {class:'banner verr'}, V.error));
+  root.append(card('How to record it',
+    h('ol', {class:'tips'},
+      h('li', {}, 'On the console, open one inventory section and sort it by New.'),
+      h('li', {}, 'Record a clip while you move over each item, slowly. New items show a “!”: only those are logged.'),
+      h('li', {}, 'Stop on each item until its details panel shows everything: scroll it down to the talent.'),
+      h('li', {}, 'Use the original clip (16:9). A video of the TV taken with a phone won’t work.'))));
+  const bar = h('div', {class:'actionbar'});
+  bar.append(h('button', {type:'button', class:'btn primary block', disabled: !V.section, onclick: () => { V.error = ''; nCall('pickVideo'); }},
+      'Choose video'),
+    h('div', {class:'missing'}, V.section ? 'Section: ' + V.section : 'Choose the section first'));
+  root.append(bar);
+}
+function renderVideoReview(root){
+  const items = V.items, st = V.stats || {}, sk = V.skipped || {};
+  const unsure = items.filter(i => i.status !== 'new').length;
+  const info = [plural(items.length, 'item') + ' to review' + (unsure ? ' (' + unsure + ' unsure)' : '')];
+  if (sk.old) info.push(plural(sk.old, 'already seen item') + ' left out');
+  if (sk.rarity) info.push(sk.rarity + ' Exotic or lower rarity left out');
+  if (sk.unread) info.push(sk.unread + ' unreadable left out');
+  root.append(card('Found in the video (' + V.section + ')',
+    h('div', {class:'small'}, info.join(' · ')),
+    st.duration ? h('div', {class:'small muted', style:'margin-top:6px'}, 'Read ' + fmtNum(st.duration, 0) + ' s of video in ' + fmtNum(st.elapsed, 0) + ' s.') : null));
+  if (!items.length) root.append(h('div', {class:'note'}, 'No new items were found. Check that the video shows the items with their “!” before you select them, and that the section is right.'));
+  items.forEach((it, i) => {
+    const miss = missingOf(it), isEd = V.editing === i;
+    const head = h('label', {class:'vitem-h'},
+      h('input', {type:'checkbox', checked: it.checked, onchange: e => { it.checked = e.target.checked; renderLog(); }}),
+      h('span', {class:'vitem-t'}, h('b', {}, stepDone(it.sel, 3) ? itemName(it.sel) : it.title || (it.sel.slot ? 'Unknown ' + it.sel.slot : 'Unknown item')),
+        h('small', {}, stepDone(it.sel, 3) ? itemSub(it.sel) + (it.title && it.sel.rarity !== NAMED ? ' · ' + it.title : '')
+          : 'Couldn’t tell the ' + (it.sel.cat === 'weapon' || !it.sel.cat && V.section === 'Weapons' ? 'weapon type' : 'brand or Gear Set') + ': use Edit')),
+      it.status === 'new' ? h('span', {class:'pill'}, 'New') : h('span', {class:'pill warn', title: 'The video didn’t show whether it had the “!”'}, 'New?'));
+    const body = h('div', {class:'vitem-b'}, h('div', {class:'small'}, videoSummary(it)),
+      miss.length ? h('div', {class:'vmiss'}, 'Check: ' + miss.join(', ')) : null,
+      h('button', {type:'button', class:'btn vedit', onclick: () => { V.editing = isEd ? -1 : i; renderLog(); }}, isEd ? 'Done' : 'Edit'));
+    const box = h('div', {class:'vitem' + (it.checked ? '' : ' off') + (miss.length && it.checked ? ' bad' : '')}, head, body);
+    if (isEd){
+      const ed = h('div', {class:'vedit-box'});
+      ed.append(...itemSteps(it.sel, (k, v) => { if (applySel(it.sel, k, v)){ guessRarity(it); fillRoll(it); } renderLog(); }));
+      if (stepDone(it.sel, 3)) ed.append(...rollFields(it, itemInfo(it.sel), false, renderLog));
+      box.append(ed);
+    }
+    root.append(box);
+  });
+  const chosen = items.filter(i => i.checked), bad = chosen.filter(i => missingOf(i).length);
+  const bar = h('div', {class:'actionbar', id:'vbar'});
+  bar.append(h('button', {type:'button', class:'btn primary block', disabled: !chosen.length || bad.length > 0, onclick: saveVideoItems},
+      'Save ' + plural(chosen.length, 'drop')),
+    h('div', {class:'missing'}, bad.length ? 'Complete or uncheck: ' + bad.map(i => '#' + (items.indexOf(i) + 1)).join(', ') : chosen.length ? 'Ready to save' : 'Nothing checked'));
+  root.append(bar);
+}
+function saveVideoItems(){
+  const chosen = V.items.filter(i => i.checked);
+  if (!chosen.length || chosen.some(i => missingOf(i).length)) return;
+  const ts = Date.now(), ids = [];
+  chosen.forEach((o, k) => {
+    const info = itemInfo(o.sel);
+    const d = {id: uid(), ts: ts + k, cat: o.sel.cat, set: o.sel.set || null, slot: o.sel.slot,
+      rarity: o.sel.cat === 'gear' ? GS : o.sel.rarity, named: o.sel.rarity === NAMED ? o.sel.named : null,
+      core: info.hasCore ? (info.fixedCore || o.core) : null, attrs: info.attrSlots ? o.attrs.slice() : [], talent: info.talentPool.length ? o.talent : null};
+    S.drops.push(d); ids.push(d.id);
+  });
+  persist();
+  Object.assign(V, {open: false, phase: 'pick', items: [], editing: -1});
+  renderLog(); window.scrollTo(0, 0);
+  toast(plural(ids.length, 'drop') + ' saved', 'Undo', () => {
+    const set = new Set(ids);
+    S.drops = S.drops.filter(x => !set.has(x.id));
+    persist(); renderView(); toast('Drops removed');
   });
 }
 

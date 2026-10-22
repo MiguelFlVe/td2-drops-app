@@ -48,6 +48,13 @@ android {
         }
     }
 
+    // Compress ML Kit's native library inside the APK (smaller download; it's unpacked when installed)
+    packaging {
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17

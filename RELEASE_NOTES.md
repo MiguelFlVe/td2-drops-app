@@ -1,9 +1,5 @@
-**What's new in 2.2**
+**What's new in 2.3**
 
-Game data updated from the community [Division 2 Gear Spreadsheet](https://docs.google.com/spreadsheets/d/1nrPBmOrtpkEW1j5fbcRT7L-AXgsGOqMqxXoVtopsiGM/htmlview).
-
-- **Native cores:** brand items, Named gear and Gear Set pieces always drop with their brand's or set's core attribute. Log drop fills it in, and Odds no longer treats the core as chance. Core Strength pieces (other than the backpack) and Refactor still let you pick it. System Corruption's core depends on the slot.
-- **Drops with an impossible core** are flagged in History ("Core should be…") and left out of your counts in Odds. They aren't changed: delete and log them again if it was a slip.
-- **Weapons:** 13 possible attributes (Accuracy, Magazine Size, Optimal Range, Rate of Fire, Reload Speed, Stability and Swap Speed join the 6 damage ones). Stabilize can roll on LMGs. New Named SMG: The Sleigher.
-- **Named gear:** Turmoil comes with Critical Hit Damage and Critical Hit Chance already rolled; Punch Drunk, Eagle's Grasp and Firm Handshake can't roll their unique attribute as the free one.
-- **Catalog:** sets are edited as `Name | Core`. Your catalog is upgraded automatically and keeps everything you added.
+- **Log from a video:** in Log drop, tap **Log from a video**, choose the inventory section and pick a clip you recorded on the console while going over your items (sorted by New, stopping on each one until its details panel shows the talent). The app finds the items that were new — the ones that still had their “!” — reads their details and lists them so you can check, edit or uncheck each one before saving them all at once.
+- Everything happens on your phone, without a connection: the text is read with Google ML Kit's on-device text recognition, whose model is now inside the app (that's why the download is bigger). The app still has no internet permission.
+- Items the video couldn't tell apart as new are marked **New?**. Items it couldn't fully identify are flagged so you complete them with the usual steps.

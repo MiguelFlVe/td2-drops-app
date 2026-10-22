@@ -6,6 +6,9 @@ getting the roll you want once a specific item drops.
 - **Log drop** in 4 steps that unlock in order: type → slot (and, for gear, the Brand or Gear Set) → rarity
   (High End / Named) → attributes & talent. Changing an earlier choice clears the ones after it.
   Named items lock their unique attribute or perfect talent; Gear Set chests and backpacks lock the set talent.
+- **Log from a video** (2.3): record a clip on the console while you go over one section of your inventory, and the
+  app reads it on your phone. It finds the items that were new (they still had their “!”), reads their details panel
+  and lists them for you to check, fix and save. See [Log from a video](#log-from-a-video).
 - **Odds**: pick an item (steps 1–3) and the roll you want (step 4). The app estimates the chance of that roll
   *once that item drops*, from your own drops, separately for each core attribute.
 - **Native cores**: brand items, Named gear and Gear Set pieces always drop with the core attribute of their brand
@@ -17,6 +20,28 @@ getting the roll you want once a specific item drops.
   [Division 2 Gear Spreadsheet](https://docs.google.com/spreadsheets/d/1nrPBmOrtpkEW1j5fbcRT7L-AXgsGOqMqxXoVtopsiGM/htmlview)
   (native cores, the 13 weapon attributes, which talents roll on each weapon type), plus Red Horizon items from
   newer sources.
+
+## Log from a video
+
+1. In the game, open one inventory section (Weapons, Mask, Backpack…) and sort it by **New**.
+2. Record a clip on the console while you move over each item slowly. Stop on each one until its details panel shows
+   everything: scroll the panel down to the talent.
+3. In the app: **Log drop → Log from a video**, pick the section and the clip (the original 16:9 capture; a video of
+   the TV taken with a phone won't work).
+4. Check the list and tap **Save**. Each item can be unchecked or edited (with the usual steps) before saving.
+
+How it works, all on the phone and without a connection:
+
+- The cursor is the bright orange tile in the item grid. A new item has a small orange badge with a white “!”, which
+  the game removes as soon as the item is selected; so an item was new if its tile had the badge just before the
+  cursor reached it. Items that were already seen are left out.
+- If the list scrolled and the tile wasn't on screen before, the app can't tell: the item is marked **New?** and
+  pre-checked only if it came between new items (the list is sorted by New).
+- The details panel is read with Google ML Kit's on-device text recognition (the model ships inside the APK, which is
+  why the app is bigger since 2.3; nothing is uploaded and the app still has no internet permission). The text is
+  matched against the Catalog: weapon type, Named item (by name, or by its perfect talent), brand or Gear Set, core,
+  attributes and talent. Exotics are skipped.
+- The game must be in English, like the Catalog.
 
 ## How the odds are estimated
 
@@ -102,7 +127,10 @@ stable signature (updates install over the previous version). Without it, each b
 - `python3 tests/run_all.py` runs the browser tests (Playwright + Chromium) against `app/src/main/assets/index.html`:
   the 4-step flow, the odds (checked against an independent Python implementation), migration of old files, the
   native file bridge (mocked), catalog editing, base data, the Core Strength backpack and First Sight exceptions, and
-  the spreadsheet data (native cores, Named gear rolls, catalog v3 → v4 upgrade).
+  the spreadsheet data (native cores, Named gear rolls, catalog v3 → v4 upgrade), and the review screen of Log from a
+  video, fed with the real OCR of a console clip and of gear screenshots (`tests/fixtures/video-*.json`).
+- `VideoTracker.java` (cursor and “!” detection) is plain Java with no Android classes, so it can be run on a computer
+  with frames of a clip (1920×1080 RGB) to check it.
 - `python3 tools/apk_signature.py drops-td2.apk` and `python3 tools/apk_manifest.py drops-td2.apk` check a built
   APK's signature, certificate and version.
 
