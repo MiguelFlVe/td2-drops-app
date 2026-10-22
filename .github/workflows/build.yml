@@ -34,7 +34,9 @@ jobs:
 
       # The version name comes from the VERSION file (bump it in every release commit).
       # The version code is the run number, so it always goes up and updates install over the old version.
+      # Only main publishes. Other branches (run by hand) just check that the app builds and save the APK to "apk-test".
       - name: Check version
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -64,6 +66,7 @@ jobs:
           path: out/drops-td2.apk
 
       - name: Publish release
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -78,6 +81,7 @@ jobs:
             --latest
 
       - name: Save APK to the apk branch
+        if: github.ref == 'refs/heads/main'
         run: |
           mkdir -p /tmp/apkbranch && cp out/drops-td2.apk /tmp/apkbranch/
           cd /tmp/apkbranch
@@ -87,3 +91,15 @@ jobs:
           git add drops-td2.apk
           git commit -q -m "APK $VERSION_NAME"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" apk
+
+      - name: Save test APK to the apk-test branch
+        if: github.ref != 'refs/heads/main'
+        run: |
+          mkdir -p /tmp/apktest && cp out/drops-td2.apk /tmp/apktest/
+          cd /tmp/apktest
+          git init -q -b apk-test
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drops-td2.apk
+          git commit -q -m "Test APK from ${{ github.ref_name }} (${{ github.sha }})"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" apk-test

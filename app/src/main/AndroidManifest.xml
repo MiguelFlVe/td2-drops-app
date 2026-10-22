@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Sin permiso de INTERNET: la app funciona 100 % sin conexión. -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<!-- No INTERNET permission: the app works 100% offline. ML Kit's libraries ask for network access
+     (only for usage logging); it's removed here because the text model is bundled in the APK. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
 
     <application
         android:label="Drops TD2"

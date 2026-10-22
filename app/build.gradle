@@ -17,6 +17,10 @@ android {
         targetSdk 34
         versionCode Integer.parseInt(System.getenv('VERSION_CODE') ?: '1')
         versionName System.getenv('VERSION_NAME') ?: '1.0'
+        // Phones only (ML Kit's text model adds about 4 MB per architecture)
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a'
+        }
     }
 
     signingConfigs {
@@ -48,4 +52,9 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+}
+
+dependencies {
+    // On-device text recognition with the model bundled in the APK (works offline; no Google Play download)
+    implementation 'com.google.mlkit:text-recognition:16.0.1'
 }

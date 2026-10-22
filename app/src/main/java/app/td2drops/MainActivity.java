@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
+import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
@@ -41,6 +42,7 @@ public class MainActivity extends Activity {
     private static final int REQ_OPEN_DB = 2;
     private static final int REQ_EXPORT = 3;
     private static final int REQ_IMPORT = 4;
+    private static final int REQ_VIDEO = 5;
 
     private static final String PREFS = "td2drops";
     private static final String KEY_URI = "dbUri";
@@ -50,6 +52,8 @@ public class MainActivity extends Activity {
     private WebView web;
     private SharedPreferences prefs;
     private volatile String pendingExport;
+    private volatile VideoScanner scanner;
+    private volatile String videoResult;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -277,9 +281,33 @@ public class MainActivity extends Activity {
                 }
                 break;
             }
+            case REQ_VIDEO:
+                startVideoScan(uri);
+                break;
             default:
                 break;
         }
+    }
+
+    // ---------------------------------------------------------------- video import
+
+    private void startVideoScan(Uri uri) {
+        if (scanner != null) return;
+        VideoScanner sc = new VideoScanner();
+        scanner = sc;
+        videoResult = null;
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        js("window.__videoProgress && window.__videoProgress(0, " + q("Opening the video…") + ")");
+        new Thread(() -> {
+            String res = sc.scan(getApplicationContext(), uri, (pct, msg) -> runOnUiThread(() ->
+                    js("window.__videoProgress && window.__videoProgress(" + pct + ", " + q(msg) + ")")));
+            runOnUiThread(() -> {
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                videoResult = res;
+                scanner = null;
+                js("window.__videoDone && window.__videoDone()");
+            });
+        }, "video-scan").start();
     }
 
     // ---------------------------------------------------------------- JavaScript bridge
@@ -398,6 +426,29 @@ public class MainActivity extends Activity {
             i.setType("*/*");
             i.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"application/json", "text/plain", "application/octet-stream"});
             launch(i, REQ_IMPORT);
+        }
+
+        /** Lets the user pick an inventory video; the result arrives through window.__videoDone(). */
+        @JavascriptInterface
+        public void pickVideo() {
+            Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            i.addCategory(Intent.CATEGORY_OPENABLE);
+            i.setType("video/*");
+            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            launch(i, REQ_VIDEO);
+        }
+
+        @JavascriptInterface
+        public void cancelVideo() {
+            VideoScanner sc = scanner;
+            if (sc != null) sc.cancel();
+        }
+
+        /** JSON with what was read from the last video (see VideoScanner.scan). */
+        @JavascriptInterface
+        public String videoResult() {
+            String r = videoResult;
+            return r == null ? "" : r;
         }
 
         @JavascriptInterface
